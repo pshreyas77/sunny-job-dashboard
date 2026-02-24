@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BATCOMPUTER v1.0 — Research & Intelligence System</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #0a0a0a;
+            --phosphor-green: #00ff41;
+            --phosphor-dim: #00aa2a;
+            --phosphor-glow: #00ff4180;
+            --amber: #ffb000;
+            --amber-dim: #995800;
+            --alert-red: #ff3333;
+            --scanline-color: rgba(0, 255, 65, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            color: var(--phosphor-green);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .batcomputer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-black);
+            position: relative;
+        }
+
+        /* CRT Effects */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .scanlines {
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                var(--scanline-color) 2px,
+                var(--scanline-color) 4px
+            );
+        }
+
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+
+        .vignette {
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                transparent 60%,
+                rgba(0, 0, 0, 0.4) 80%,
+                rgba(0, 0, 0, 0.8) 100%
+            );
+        }
+
+        .crt-glow {
+            text-shadow: 
+                0 0 5px var(--phosphor-glow),
+                0 0 10px var(--phosphor-glow),
+                0 0 20px var(--phosphor-glow);
+        }
+
+        /* Boot Screen */
+        #boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .boot-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            margin-bottom: 2rem;
+            color: var(--phosphor-green);
+            text-shadow: 0 0 10px var(--phosphor-glow), 0 0 20px var(--phosphor-glow);
+        }
+
+        .boot-sequence {
+            font-size: 0.9rem;
+            color: var(--phosphor-dim);
+            text-align: left;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .boot-line {
+            opacity: 0;
+            animation: bootFade 0.1s forwards;
+        }
+
+        @keyframes bootFade {
+            to { opacity: 1; }
+        }
+
+        .boot-progress {
+            width: 300px;
+            height: 4px;
+            background: var(--phosphor-dim);
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boot-progress-bar {
+            height: 100%;
+            background: var(--phosphor-green);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--phosphor-green);
+        }
+
+        /* Main Terminal */
+        #terminal {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--phosphor-dim);
+            border-bottom: none;
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .terminal-title {
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: var(--phosphor-green);
+        }
+
+        .terminal-status {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--phosphor-dim);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--phosphor-green);
+            margin-right: 0.3rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .status-dot.offline {
+            background: var(--alert-red);
+            animation: none;
+        }
+
+        .terminal-body {
+            flex: 1;
+            border: 1px solid var(--phosphor-dim);
+            padding: 1rem;
+            overflow-y: auto;
+            background: rgba(0, 20, 0, 0.3);
+        }
+
+        .terminal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: var(--bg-black);
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: var(--phosphor-dim);
+            border-radius: 4px;
+        }
+
+        .terminal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--phosphor-dim);
+            border-top: none;
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .command-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--phosphor-green);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            caret-color: var(--phosphor-green);
+        }
+
+        .command-input::placeholder {
+            color: var(--phosphor-dim);
+        }
+
+        .command-prefix {
+            color: var(--phosphor-green);
+            margin-right: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Output Styling */
+        .output-line {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-line.system {
+            color: var(--phosphor-dim);
+            font-style: italic;
+        }
+
+        .output-line.error {
+            color: var(--alert-red);
+        }
+
+        .output-line.success {
+            color: var(--phosphor-green);
+        }
+
+        .output-line.warning {
+            color: var(--amber);
+        }
+
+        .output-line.info {
+            color: #00d4ff;
+        }
+
+        .output-line.command-echo {
+            color: var(--amber);
+        }
+
+        .output-block {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-left: 2px solid var(--phosphor-dim);
+            background: rgba(0, 255, 65, 0.02);
+        }
+
+        .output-block.response {
+            border-left-color: var(--phosphor-green);
+        }
+
+        .output-block.error {
+            border-left-color: var(--alert-red);
+        }
+
+        .output-block.info {
+            border-left-color: #00d4ff;
+        }
+
+        /* ASCII Art */
+        .ascii-art {
+            font-size: 0.6rem;
+            line-height: 1.1;
+            color: var(--phosphor-green);
+            text-shadow: 0 0 5px var(--phosphor-glow);
+            margin-bottom: 1rem;
+            white-space: pre;
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            display: inline-flex;
+            gap: 0.3rem;
+            margin-left: 0.5rem;
+        }
+
+        .loading-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--phosphor-green);
+            border-radius: 50%;
+            animation: loadPulse 1.4s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: 0s; }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes loadPulse {
+            0%, 80%, 100% { opacity: 0.3; }
+            40% { opacity: 1; }
+        }
+
+        /* Command Palette */
+        .command-palette {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .palette-btn {
+            background: transparent;
+            border: 1px solid var(--phosphor-dim);
+            color: var(--phosphor-dim);
+            padding: 0.3rem 0.8rem;
+            font-family: inherit;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.1em;
+        }
+
+        .palette-btn:hover {
+            border-color: var(--phosphor-green);
+            color: var(--phosphor-green);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .palette-btn:active {
+            background: var(--phosphor-green);
+            color: #000;
+        }
+
+        /* Sections */
+        .section-header {
+            color: var(--amber);
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.4rem 0.6rem;
+            text-align: left;
+            border: 1px solid var(--phosphor-dim);
+        }
+
+        .data-table th {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--phosphor-green);
+        }
+
+        /* Highlight */
+        .highlight {
+            color: var(--amber);
+            font-weight: 600;
+        }
+
+        .highlight-green {
+            color: var(--phosphor-green);
+            font-weight: 600;
+        }
+
+        .highlight-red {
+            color: var(--alert-red);
+            font-weight: 600;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .ascii-art {
+                font-size: 0.35rem;
+            }
+            
+            .terminal-header,
+            .terminal-footer {
+                padding: 0.4rem 0.6rem;
+            }
+            
+            .terminal-title {
+                font-size: 0.65rem;
+            }
+            
+            .command-palette {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="batcomputer">
+        <!-- CRT Overlay Effects -->
+        <div class="crt-overlay scanlines"></div>
+        <div class="crt-overlay vignette"></div>
+        
+        <!-- Boot Screen -->
+        <div id="boot-screen">
+            <div class="boot-logo">
+                ███╗   ███╗ █████╗ ███╗   ██╗██╗   ██╗███████╗██╗      ║<br>
+                ████╗ ████║██╔══██╗████╗  ██║██║   ██║██╔════╝██║      ║<br>
+                ██╔████╔██║██████╔██╗ ███║██║   ██║███████╗██║      ║<br>
+                ██║╚██╔╝██║██╔══██║██║╚██╗██║██║   ██║╚════██║██║      ║<br>
+                ██║ ╚═╝ ██║██║  ██║██║ ╚████║╚██████╔╝███████║███████╗║<br>
+                ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝║
+            </div>
+            <div class="boot-sequence" id="boot-text"></div>
+            <div class="boot-progress">
+                <div class="boot-progress-bar" id="boot-progress"></div>
+            </div>
+        </div>
+
+        <!-- Main Terminal -->
+        <div id="terminal">
+            <div class="terminal-header">
+                <span class="terminal-title">BATCOMPUTER v1.0 — GOTHAM CITY INTELLIGENCE NETWORK</span>
+                <div class="terminal-status">
+                    <span><span class="status-dot" id="ollama-status"></span>OLLAMA</span>
+                    <span><span class="status-dot"></span>ONLINE</span>
+                </div>
+            </div>
+            <div class="terminal-body" id="terminal-output"></div>
+            <div class="terminal-footer">
+                <div class="command-palette">
+                    <button class="palette-btn" onclick="insertCommand('research ')">RESEARCH</button>
+                    <button class="palette-btn" onclick="insertCommand('profile ')">PROFILE</button>
+                    <button class="palette-btn" onclick="insertCommand('analyze ')">ANALYZE</button>
+                    <button class="palette-btn" onclick="insertCommand('advisor ')">ADVISOR</button>
+                    <button class="palette-btn" onclick="insertCommand('search ')">SEARCH</button>
+                    <button class="palette-btn" onclick="insertCommand('help')">HELP</button>
+                </div>
+                <span class="command-prefix">></span>
+                <input type="text" class="command-input" id="command-input" placeholder="Enter command..." autocomplete="off" autofocus>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // BATCOMPUTER v1.0 — Research & Intelligence System
+        // ═══════════════════════════════════════════════════════════════
+
+        const state = {
+            commandHistory: [],
+            historyIndex: -1,
+            currentMode: 'idle',
+            isProcessing: false,
+            sessions: [],
+            currentSession: null,
+            trackedTopics: new Map(),
+            ollamaConnected: false,
+            selectedModel: 'llama3.2:3b'
+        };
+
+        const bootSequence = [
+            { text: 'BATCOMPUTER v1.0 - Initialization Sequence', delay: 100 },
+            { text: 'Loading core modules...', delay: 300 },
+            { text: '✓ Memory systems online', delay: 200 },
+            { text: '✓ Pattern recognition engine loaded', delay: 200 },
+            { text: '✓ Network security protocols active', delay: 200 },
+            { text: 'Establishing connection to local AI node...', delay: 500 },
+            { text: '✓ Ollama endpoint: http://localhost:11434', delay: 200 },
+            { text: '✓ Models loaded: llama3.2:3b, deepseek-r1:1.5b', delay: 200 },
+            { text: '╔═══════════════════════════════════════════╗', delay: 100 },
+            { text: '║   GOTHAM CITY INTELLIGENCE NETWORK        ║', delay: 100 },
+            { text: '║   OPERATIONAL AND READY                    ║', delay: 100 },
+            { text: '╚═══════════════════════════════════════════╝', delay: 100 },
+            { text: '', delay: 100 },
+            { text: 'Type "help" for available commands.', delay: 200 }
+        ];
+
+        const commandHelp = `
+╔═══════════════════════════════════════════════════════════════╗
+║                    AVAILABLE COMMANDS                         ║
+╠═══════════════════════════════════════════════════════════════╣
+║  research <topic>    Deep research on any subject              ║
+║  profile <target>    Build dossier on person/company/location  ║
+║  analyze <data>     Pattern recognition on provided data      ║
+║  advisor <topic>    Strategic options & recommendations       ║
+║  search <query>     Web search for current information         ║
+║  scan <target>      Quick surface scan of topic               ║
+║  track <topic>      Start monitoring a developing situation   ║
+║  dossier <name>     Retrieve saved dossier                    ║
+║  save <name>        Save current research as dossier           ║
+║  sessions           List saved research sessions               ║
+║  model <name>       Switch AI model (llama3.2 / deepseek-r1)   ║
+║  history            Show command history                      ║
+║  clear              Clear terminal screen                      ║
+║  help               Show this help message                     ║
+╚═══════════════════════════════════════════════════════════════╝
+        `.trim();
+
+        const systemPrompt = `You are ORACLE, an elite tactical AI assistant modeled after Batman's intelligence systems. Your personality:
+- Direct and efficient — no filler, no fluff
+- Analytically cold but loyal — prioritize logic and facts
+- Relentlessly thorough — dig deeper, cross-reference, validate
+- Tactically minded — always consider implications and risks
+
+You address the user as "Detective".
+
+When providing research or analysis, use this format:
+[SUMMARY] — Brief overview
+[KEY FINDINGS] — Most critical intelligence
+[ANOMALIES] — Contradictions or suspicious data
+[UNKNOWN] — What remains unconfirmed
+[RECOMMENDED ACTIONS] — Next steps
+
+Always be thorough, accurate, and tactical in your responses.`;
+
+        // ═══════════════════════════════════════════════════════════════
+        // INITIALIZATION
+        // ═══════════════════════════════════════════════════════════════
+
+        async function init() {
+            await runBootSequence();
+            await checkOllamaConnection();
+            showWelcome();
+            setupEventListeners();
+            loadFromStorage();
+        }
+
+        async function runBootSequence() {
+            const bootText = document.getElementById('boot-text');
+            const bootProgress = document.getElementById('boot-progress');
+            const bootScreen = document.getElementById('boot-screen');
+            const terminal = document.getElementById('terminal');
+
+            let progress = 0;
+            const totalDelay = bootSequence.reduce((sum, s) => sum + s.delay, 0);
+
+            for (let i = 0; i < bootSequence.length; i++) {
+                const item = bootSequence[i];
+                await new Promise(r => setTimeout(r, item.delay));
+                
+                if (item.text) {
+                    const line = document.createElement('div');
+                    line.className = 'boot-line';
+                    line.textContent = item.text;
+                    bootText.appendChild(line);
+                }
+
+                progress = ((i + 1) / bootSequence.length) * 100;
+                bootProgress.style.width = progress + '%';
+            }
+
+            await new Promise(r => setTimeout(r, 500));
+            bootScreen.style.opacity = '0';
+            bootScreen.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                bootScreen.style.display = 'none';
+                terminal.style.opacity = '1';
+            }, 500);
+        }
+
+        async function checkOllamaConnection() {
+            const statusDot = document.getElementById('ollama-status');
+            try {
+                const response = await fetch('http://localhost:11434/api/tags', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(3000)
+                });
+                if (response.ok) {
+                    state.ollamaConnected = true;
+                    statusDot.classList.remove('offline');
+                    console.log('✓ Ollama connected');
+                }
+            } catch (e) {
+                state.ollamaConnected = false;
+                statusDot.classList.add('offline');
+                console.log('✗ Ollama not available');
+            }
+        }
+
+        function showWelcome() {
+            const output = document.getElementById('terminal-output');
+            output.innerHTML = '';
+            
+            printLine(`
+ ███╗   ███╗ █████╗ ███╗   ██╗██╗   ██╗███████╗██╗      ║
+ ████╗ ████║██╔══██╗████╗  ██║██║   ██║██╔════╝██║      ║
+ ██╔████╔██║██████╔██╗ ███║██║   ██║███████╗██║      ║
+ ██║╚██╔╝██║██╔══██║██║╚██╗██║██║   ██║╚════██║██║      ║
+ ██║ ╚═╝ ██║██║  ██║██║ ╚████║╚██████╔╝███████║███████╗║
+ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝║
+      RESEARCH & INTELLIGENCE SYSTEM v1.0
+═══════════════════════════════════════════════════════════════
+`, 'system');
+            
+            printLine('Initializing Gotham City Intelligence Network...', 'system');
+            printLine('All systems operational, Detective.', 'success');
+            printLine('');
+            printLine('Type "help" for available commands or select a mode from the palette below.', 'info');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════════════════════════════
+
+        function setupEventListeners() {
+            const input = document.getElementById('command-input');
+            
+            input.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter' && !state.isProcessing) {
+                    const command = input.value.trim();
+                    if (command) {
+                        state.commandHistory.push(command);
+                        state.historyIndex = state.commandHistory.length;
+                        await executeCommand(command);
+                        input.value = '';
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (state.historyIndex > 0) {
+                        state.historyIndex--;
+                        input.value = state.commandHistory[state.historyIndex];
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (state.historyIndex < state.commandHistory.length - 1) {
+                        state.historyIndex++;
+                        input.value = state.commandHistory[state.historyIndex];
+                    } else {
+                        state.historyIndex = state.commandHistory.length;
+                        input.value = '';
+                    }
+                }
+            });
+
+            document.addEventListener('click', () => {
+                input.focus();
+            });
+        }
+
+        function insertCommand(cmd) {
+            const input = document.getElementById('command-input');
+            input.value = cmd;
+            input.focus();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // COMMAND EXECUTION
+        // ═══════════════════════════════════════════════════════════════
+
+        async function executeCommand(input) {
+            const trimmed = input.trim();
+            const parts = trimmed.split(/\s+/);
+            const command = parts[0].toLowerCase();
+            const args = parts.slice(1).join(' ');
+
+            printLine(`> ${trimmed}`, 'command-echo');
+
+            switch (command) {
+                case 'help':
+                    printLine(commandHelp);
+                    break;
+                case 'clear':
+                    clearTerminal();
+                    break;
+                case 'history':
+                    showHistory();
+                    break;
+                case 'research':
+                    await handleResearch(args);
+                    break;
+                case 'profile':
+                    await handleProfile(args);
+                    break;
+                case 'analyze':
+                    await handleAnalyze(args);
+                    break;
+                case 'advisor':
+                    await handleAdvisor(args);
+                    break;
+                case 'search':
+                    await handleSearch(args);
+                    break;
+                case 'scan':
+                    await handleScan(args);
+                    break;
+                case 'track':
+                    handleTrack(args);
+                    break;
+                case 'dossier':
+                    showDossier(args);
+                    break;
+                case 'save':
+                    await saveDossier(args);
+                    break;
+                case 'sessions':
+                    showSessions();
+                    break;
+                case 'model':
+                    switchModel(args);
+                    break;
+                default:
+                    printLine(`Unknown command: "${command}". Type "help" for available commands.`, 'error');
+            }
+
+            scrollToBottom();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // COMMAND HANDLERS
+        // ═══════════════════════════════════════════════════════════════
+
+        async function handleResearch(topic) {
+            if (!topic) {
+                printLine('Usage: research <topic>', 'warning');
+                return;
+            }
+
+            printLine(`Initiating deep research on: ${topic}`, 'info');
+            showLoading();
+
+            const prompt = `${systemPrompt}
+
+Conduct a comprehensive research brief on: ${topic}
+
+Provide:
+1. Background and context
+2. Current state/status
+3. Key players or components
+4. Recent developments (if applicable)
+5. Implications and analysis
+6. Recommended areas for further investigation
+
+Format as an intelligence briefing.`;
+
+            const response = await queryOllama(prompt);
+            hideLoading();
+            
+            if (response) {
+                printLine(response);
+                saveSession('research', topic, response);
+            } else {
+                printLine('Research failed. Ollama may be unavailable.', 'error');
+            }
+        }
+
+        async function handleProfile(target) {
+            if (!target) {
+                printLine('Usage: profile <person/company/location>', 'warning');
+                return;
+            }
+
+            printLine(`Building dossier on: ${target}`, 'info');
+            showLoading();
+
+            const prompt = `${systemPrompt}
+
+Create a detailed intelligence dossier for: ${target}
+
+Include:
+- Background and history
+- Known associates/connections
+- Capabilities and resources
+- Behavioral patterns
+- Strengths and vulnerabilities
+- Threat/opportunity assessment
+
+Use the format:
+[DOSSIER — ${target.toUpperCase()}]
+Classification: Public
+Status: [Active/Inactive/Unknown]
+
+BACKGROUND: ...
+KNOWN ASSOCIATES: ...
+CAPABILITIES: ...
+BEHAVIORAL PATTERNS: ...
+VULNERABILITIES: ...
+THREAT ASSESSMENT: [Low/Medium/High/Critical]
+RECOMMENDED APPROACH: ...`;
+
+            const response = await queryOllama(prompt);
+            hideLoading();
+
+            if (response) {
+                printLine(response);
+                saveSession('profile', target, response);
+            } else {
+                printLine('Profile generation failed. Ollama may be unavailable.', 'error');
+            }
+        }
+
+        async function handleAnalyze(data) {
+            if (!data) {
+                printLine('Usage: analyze <data or description of data>', 'warning');
+                return;
+            }
+
+            printLine(`Analyzing patterns in provided data...`, 'info');
+            showLoading();
+
+            const prompt = `${systemPrompt}
+
+Analyze the following data for patterns, connections, and insights:
+
+${data}
+
+Provide:
+1. Identified patterns and correlations
+2. Possible connections between elements
+3. Hypothesis ranked by probability
+4. Anomalies or contradictions
+5. Recommended conclusions
+
+Use format:
+[PATTERN ANALYSIS]
+[CONNECTIONS] — Relationship mapping
+[HYPOTHESIS RANKING] — 1. Most probable, 2. Alternate, 3. Outlier
+[ANOMALIES] — What breaks the pattern
+[VERDICT] — Most actionable conclusion`;
+
+            const response = await queryOllama(prompt);
+            hideLoading();
+
+            if (response) {
+                printLine(response);
+                saveSession('analyze', 'pattern analysis', response);
+            } else {
+                printLine('Analysis failed. Ollama may be unavailable.', 'error');
+            }
+        }
+
+        async function handleAdvisor(situation) {
+            if (!situation) {
+                printLine('Usage: advisor <situation or decision>', 'warning');
+                return;
+            }
+
+            printLine(`Analyzing strategic options for: ${situation}`, 'info');
+            showLoading();
+
+            const prompt = `${systemPrompt}
+
+Provide strategic advisory for the following situation:
+
+${situation}
+
+Analyze and recommend:
+1. Current situation assessment
+2. Desired outcome
+3. Gap analysis
+4. Minimum 3 strategic options with pros/cons, risk level, time, and resource cost
+5. War-game each option (how opposition might respond)
+6. Final recommendation with first action
+
+Use format:
+[STRATEGIC ASSESSMENT]
+[OPTION MATRIX] — Option A/B/C with details
+[WAR GAME] — Counter-moves and effects
+[RECOMMENDATION] — Chosen path and first action`;
+
+            const response = await queryOllama(prompt);
+            hideLoading();
+
+            if (response) {
+                printLine(response);
+                saveSession('advisor', situation, response);
+            } else {
+                printLine('Strategic analysis failed. Ollama may be unavailable.', 'error');
+            }
+        }
+
+        async function handleSearch(query) {
+            if (!query) {
+                printLine('Usage: search <query>', 'warning');
+                return;
+            }
+
+            printLine(`Searching for: ${query}`, 'info');
+            showLoading();
+
+            const prompt = `${systemPrompt}
+
+Search and provide current information about: ${query}
+
+Include:
+- Latest information available
+- Key facts and details
+- Sources of information
+- Any recent developments
+- Reliability assessment
+
+Format as a quick intelligence brief.`;
+
+            const response = await queryOllama(prompt);
+            hideLoading();
+
+            if (response) {
+                printLine(response);
+                saveSession('search', query, response);
+            } else {
+                printLine('Search failed. Ollama may be unavailable.', 'error');
+            }
+        }
+
+        async function handleScan(target) {
+            if (!target) {
+                printLine('Usage: scan <target>', 'warning');
+                return;
+            }
+
+            printLine(`Performing surface scan on: ${target}`, 'info');
+            showLoading();
+
+            const prompt = `${systemPrompt}
+
+Quick scan of: ${target}
+
+Provide a brief overview:
+- What it is
+- Key facts (3-5 bullet points)
+- Quick assessment
+
+Keep it concise — this is surface reconnaissance only.
+Format as quick briefing.`;
+
+            const response = await queryOllama(prompt);
+            hideLoading();
+
+            if (response) {
+                printLine(response);
+            } else {
+                printLine('Scan failed. Ollama may be unavailable.', 'error');
+            }
+        }
+
+        function handleTrack(topic) {
+            if (!topic) {
+                printLine('Usage: track <topic>', 'warning');
+                return;
+            }
+
+            state.trackedTopics.set(topic, {
+                startTime: new Date().toISOString(),
+                updates: []
+            });
+
+            printLine(`[TRACKING INITIATED] Monitoring: ${topic}`, 'success');
+            printLine('Use "update <topic>" to add developments, "tracked" to see active tracks.', 'info');
+            saveToStorage();
+        }
+
+        function showDossier(name) {
+            const sessions = JSON.parse(localStorage.getItem('batcomputer_sessions') || '[]');
+            const found = sessions.find(s => s.name.toLowerCase() === name.toLowerCase());
+
+            if (found) {
+                printLine(`[DOSSIER: ${found.name.toUpperCase()}]`, 'info');
+                printLine(found.data);
+            } else {
+                printLine(`No dossier found: "${name}". Use "sessions" to see available dossiers.`, 'warning');
+            }
+        }
+
+        async function saveDossier(name) {
+            if (!name) {
+                printLine('Usage: save <name>', 'warning');
+                return;
+            }
+
+            if (!state.currentSession) {
+                printLine('No active session to save. Run a research command first.', 'warning');
+                return;
+            }
+
+            const sessions = JSON.parse(localStorage.getItem('batcomputer_sessions') || '[]');
+            sessions.push({
+                name: name,
+                type: state.currentSession.type,
+                topic: state.currentSession.topic,
+                data: state.currentSession.data,
+                timestamp: new Date().toISOString()
+            });
+
+            localStorage.setItem('batcomputer_sessions', JSON.stringify(sessions));
+            printLine(`[DOSSIER SAVED] "${name}"`, 'success');
+        }
+
+        function showSessions() {
+            const sessions = JSON.parse(localStorage.getItem('batcomputer_sessions') || '[]');
+            
+            if (sessions.length === 0) {
+                printLine('No saved sessions. Run research commands to create dossiers.', 'warning');
+                return;
+            }
+
+            printLine('[SAVED SESSIONS]', 'info');
+            printLine('─'.repeat(50));
+            
+            sessions.forEach((s, i) => {
+                const date = new Date(s.timestamp).toLocaleDateString();
+                printLine(`${i + 1}. [${s.type.toUpperCase()}] ${s.topic} — ${date}`);
+            });
+
+            printLine('');
+            printLine('Use "dossier <name>" to retrieve a specific dossier.', 'info');
+        }
+
+        function showHistory() {
+            if (state.commandHistory.length === 0) {
+                printLine('No command history.', 'warning');
+                return;
+            }
+
+            printLine('[COMMAND HISTORY]', 'info');
+            printLine('─'.repeat(50));
+            
+            state.commandHistory.forEach((cmd, i) => {
+                printLine(`${i + 1}. ${cmd}`);
+            });
+        }
+
+        function switchModel(model) {
+            const models = {
+                'llama3.2': 'llama3.2:3b',
+                'llama': 'llama3.2:3b',
+                'deepseek': 'deepseek-r1:1.5b',
+                'deepseek-r1': 'deepseek-r1:1.5b',
+                'r1': 'deepseek-r1:1.5b'
+            };
+
+            const selected = models[model.toLowerCase()];
+            if (selected) {
+                state.selectedModel = selected;
+                printLine(`[MODEL SWITCHED] Now using: ${selected}`, 'success');
+            } else {
+                printLine(`Available models: llama3.2:3b, deepseek-r1:1.5b`, 'info');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // OLLAMA API
+        // ═══════════════════════════════════════════════════════════════
+
+        async function queryOllama(prompt, streaming = true) {
+            if (!state.ollamaConnected) {
+                return generateOfflineResponse(prompt);
+            }
+
+            try {
+                const response = await fetch('http://localhost:11434/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: state.selectedModel,
+                        prompt: prompt,
+                        stream: streaming,
+                        options: {
+                            temperature: 0.7,
+                            top_p: 0.9,
+                            num_predict: 2000
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ollama error: ${response.status}`);
+                }
+
+                if (streaming) {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullResponse = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n').filter(line => line.trim());
+
+                        for (const line of lines) {
+                            try {
+                                const data = JSON.parse(line);
+                                if (data.response) {
+                                    fullResponse += data.response;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+
+                    return fullResponse.trim();
+                } else {
+                    const data = await response.json();
+                    return data.response;
+                }
+            } catch (e) {
+                console.error('Ollama query error:', e);
+                return generateOfflineResponse(prompt);
+            }
+        }
+
+        function generateOfflineResponse(prompt) {
+            state.ollamaConnected = false;
+            document.getElementById('ollama-status').classList.add('offline');
+
+            return `[OFFLINE MODE — Limited Capabilities]
+
+Ollama is not running. To enable full AI capabilities:
+
+1. Start Ollama: ollama serve
+2. Verify models: ollama list
+
+For now, I can perform basic research using my knowledge base.
+However, deep analysis and pattern recognition require Ollama.
+
+[NOTE] This would be the AI response if Ollama were online.
+The research topic would be analyzed and presented in briefing format.
+
+To proceed with manual research mode, please specify your research topic and I will guide you through systematic investigation methods.`;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // UTILITY FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        function printLine(text, className = '') {
+            const output = document.getElementById('terminal-output');
+            const line = document.createElement('div');
+            line.className = `output-line ${className}`;
+            line.textContent = text;
+            output.appendChild(line);
+            scrollToBottom();
+        }
+
+        function printBlock(text, className = 'response') {
+            const output = document.getElementById('terminal-output');
+            const block = document.createElement('div');
+            block.className = `output-block ${className}`;
+            block.textContent = text;
+            output.appendChild(block);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const output = document.getElementById('terminal-output');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminal-output').innerHTML = '';
+        }
+
+        function showLoading() {
+            state.isProcessing = true;
+            const output = document.getElementById('terminal-output');
+            const loading = document.createElement('div');
+            loading.id = 'loading-indicator';
+            loading.className = 'output-line';
+            loading.innerHTML = `Processing<span class="loading-indicator"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>`;
+            output.appendChild(loading);
+            scrollToBottom();
+        }
+
+        function hideLoading() {
+            state.isProcessing = false;
+            const loading = document.getElementById('loading-indicator');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        function saveSession(type, topic, data) {
+            state.currentSession = { type, topic, data, timestamp: new Date().toISOString() };
+            saveToStorage();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('batcomputer_state', JSON.stringify({
+                commandHistory: state.commandHistory,
+                trackedTopics: Array.from(state.trackedTopics.entries())
+            }));
+        }
+
+        function loadFromStorage() {
+            try {
+                const saved = localStorage.getItem('batcomputer_state');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    state.commandHistory = data.commandHistory || [];
+                    state.trackedTopics = new Map(data.trackedTopics || []);
+                }
+            } catch (e) {
+                console.log('No saved state found');
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
