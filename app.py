@@ -1,737 +1,1135 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from ai_insights import generate_insights
 
-st.set_page_config(
-    page_title="IMDB Top 250 — TV Analytics",
-    page_icon="▣",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="Shreyas Job Tracker 2026", layout="wide")
 
-@st.cache_data
-def load_data():
-    return pd.read_csv('IMDB_cleaned.csv')
-
-df = load_data()
-
-BW_CHART = dict(
-    paper_bgcolor="#080808",
-    plot_bgcolor="#080808",
-    font=dict(
-        family="DM Mono, monospace",
-        color="#2E2E2E",
-        size=9
-    ),
-    xaxis=dict(
-        gridcolor="#111111",
-        linecolor="#141414",
-        tickfont=dict(color="#333333", size=8),
-        tickcolor="#141414",
-        showgrid=True,
-        zeroline=False,
-        showline=True
-    ),
-    yaxis=dict(
-        gridcolor="#111111",
-        linecolor="#141414",
-        tickfont=dict(color="#333333", size=8),
-        tickcolor="#141414",
-        showgrid=True,
-        zeroline=False,
-        showline=False
-    ),
-    legend=dict(
-        bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#333333", size=8),
-        orientation="h",
-        yanchor="bottom", y=-0.35,
-        xanchor="left", x=0,
-        bordercolor="rgba(0,0,0,0)"
-    ),
-    margin=dict(l=10, r=10, t=10, b=40),
-    hoverlabel=dict(
-        bgcolor="#111111",
-        bordercolor="#222222",
-        font=dict(
-            family="DM Mono, monospace",
-            size=10,
-            color="#AAAAAA"
-        )
-    ),
-    colorway=["#FFFFFF","#999999","#666666","#444444","#CCCCCC","#777777"]
-)
-
-BW_TITLE = lambda t: dict(
-    text=t.upper(),
-    font=dict(
-        family="DM Mono, monospace",
-        size=8,
-        color="#2A2A2A"
-    ),
-    x=0, xanchor="left", y=0.98
-)
-
-st.markdown("""
+CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; }
-
-html, body, [class*="css"] {
-  font-family: 'DM Sans', sans-serif !important;
-  background: #000 !important;
-  color: #E0E0E0 !important;
-}
-
-#MainMenu, footer, header,
-.stDeployButton, [data-testid="stToolbar"],
-[data-testid="stDecoration"] {
-  display: none !important;
-}
-
-.main .block-container {
-  padding: 0 !important;
-  max-width: 100% !important;
-}
-section[data-testid="stMain"] > div {
-  padding: 0 !important;
-}
-
-.topbar {
-  background: #000;
-  border-bottom: 1px solid #1C1C1C;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2.5rem;
-}
-.tb-left {
-  display: flex;
-  align-items: baseline;
-  gap: 0.8rem;
-}
-.tb-logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 0.2em;
-  color: #FFF;
-}
-.tb-divider {
-  width: 1px;
-  height: 14px;
-  background: #2A2A2A;
-}
-.tb-sub {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #3A3A3A;
-}
-.tb-right {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  color: #2A2A2A;
-  text-transform: uppercase;
-}
-
-.bc {
-  background: #000;
-  border-bottom: 1px solid #141414;
-  padding: 0.4rem 2.5rem;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  color: #2E2E2E;
-  letter-spacing: 0.08em;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.bc-sep { color: #222; }
-.bc-active { color: #666; }
-
-.body-wrap {
-  padding: 2rem 2.5rem;
-}
-
-.sec-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #1A1A1A;
-  margin-bottom: 1.5rem;
-}
-.sec-eyebrow {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #333;
-  margin-bottom: 0.2rem;
-}
-.sec-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.8rem;
-  letter-spacing: 0.1em;
-  color: #FFF;
-  line-height: 1;
-}
-.sec-meta {
-  text-align: right;
-}
-.sec-meta-val {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
-  color: #555;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-.sec-meta-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #2E2E2E;
-}
-
-[data-testid="metric-container"] {
-  background: #0A0A0A !important;
-  border: 1px solid #1A1A1A !important;
-  border-top: 1px solid #2A2A2A !important;
-  border-radius: 4px !important;
-  padding: 1.2rem 1.4rem !important;
-  transition: border-color 0.2s, transform 0.2s !important;
-  position: relative !important;
-}
-[data-testid="metric-container"]:hover {
-  border-color: #333 !important;
-  border-top-color: #FFF !important;
-  transform: translateY(-2px) !important;
-}
-[data-testid="stMetricLabel"] {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.55rem !important;
-  letter-spacing: 0.18em !important;
-  text-transform: uppercase !important;
-  color: #333 !important;
-}
-[data-testid="stMetricValue"] {
-  font-family: 'Bebas Neue', sans-serif !important;
-  font-size: 2.4rem !important;
-  letter-spacing: 0.06em !important;
-  color: #E8E8E8 !important;
-  line-height: 1.1 !important;
-}
-[data-testid="stMetricDelta"] {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.6rem !important;
-  color: #333 !important;
-  letter-spacing: 0.06em !important;
-}
-
-.cc {
-  background: #080808;
-  border: 1px solid #181818;
-  border-radius: 4px;
-  padding: 1.1rem 1.2rem 0.5rem;
-  margin-bottom: 0.8rem;
-}
-.cc:hover { border-color: #222; }
-.cc-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.6rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid #141414;
-}
-.cc-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.56rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #333;
-}
-.cc-badge {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.5rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #222;
-  border: 1px solid #1E1E1E;
-  border-radius: 2px;
-  padding: 0.15rem 0.5rem;
-}
-
-[data-baseweb="tab-list"] {
-  background: transparent !important;
-  border-bottom: 1px solid #1A1A1A !important;
-  gap: 0 !important;
-  margin-bottom: 1.5rem !important;
-}
-[data-baseweb="tab"] {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.58rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
-  color: #2E2E2E !important;
-  background: transparent !important;
-  border: none !important;
-  border-bottom: 1px solid transparent !important;
-  padding: 0.65rem 1.4rem !important;
-  transition: color 0.15s !important;
-}
-[data-baseweb="tab"]:hover {
-  color: #888 !important;
-  background: transparent !important;
-}
-[aria-selected="true"] {
-  color: #E0E0E0 !important;
-  border-bottom: 1px solid #E0E0E0 !important;
-  background: transparent !important;
-}
-
-[data-testid="stSidebar"] {
-  background: #050505 !important;
-  border-right: 1px solid #141414 !important;
-}
-[data-testid="stSidebar"] > div:first-child {
-  padding: 0 !important;
-}
-.sb-head {
-  padding: 1.2rem 1.3rem 1rem;
-  border-bottom: 1px solid #141414;
-  margin-bottom: 1rem;
-}
-.sb-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
-  color: #2A2A2A;
-}
-.sb-section {
-  padding: 0 1.3rem;
-  margin-bottom: 1.2rem;
-}
-.sb-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.5rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #252525;
-  margin-bottom: 0.9rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid #141414;
-}
-[data-testid="stSidebar"] .stSelectbox label {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.52rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
-  color: #2E2E2E !important;
-}
-[data-testid="stSidebar"] .stSelectbox > div > div {
-  background: #0A0A0A !important;
-  border: 1px solid #1A1A1A !important;
-  border-radius: 3px !important;
-  color: #666 !important;
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.75rem !important;
-}
-[data-testid="stSidebar"] .stSlider label {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.52rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
-  color: #2E2E2E !important;
-}
-[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] {
-  margin-top: 0.3rem !important;
-}
-
-.div-line {
-  border: none;
-  border-top: 1px solid #141414;
-  margin: 1.5rem 0;
-}
-
-.ai-wrap {
-  background: #050505;
-  border: 1px solid #1A1A1A;
-  border-left: 1px solid #FFF;
-  border-radius: 4px;
-  padding: 1.2rem 1.5rem;
-}
-.ai-head {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.54rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #333;
-  margin-bottom: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #141414;
-}
-.ai-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #FFF;
-  animation: blink 2s ease-in-out infinite;
-}
-@keyframes blink {
-  0%,100%{opacity:1} 50%{opacity:0.1}
-}
-.ai-item {
-  display: flex;
-  gap: 0.8rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #0F0F0F;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 300;
-  color: #555;
-  line-height: 1.55;
-}
-.ai-item:first-of-type { color: #888; }
-.ai-item:last-child { border-bottom: none; }
-.ai-n {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.1rem;
-  color: #222;
-  line-height: 1;
-  flex-shrink: 0;
-  padding-top: 2px;
-}
-
-.show-card {
-  background: #080808;
-  border: 1px solid #1A1A1A;
-  border-radius: 4px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-}
-.show-rank {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #2A2A2A;
-  margin-bottom: 0.3rem;
-}
-.show-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
-  letter-spacing: 0.1em;
-  color: #FFF;
-  line-height: 1;
-  margin-bottom: 1rem;
-}
-.show-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  border-top: 1px solid #141414;
-  padding-top: 1rem;
-}
-.show-stat-val {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.6rem;
-  color: #888;
-  letter-spacing: 0.06em;
-}
-.show-stat-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.5rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #2A2A2A;
-}
-
-.stButton > button {
-  background: transparent !important;
-  border: 1px solid #1E1E1E !important;
-  color: #333 !important;
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.6rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
-  border-radius: 3px !important;
-  padding: 0.5rem 1.5rem !important;
-  transition: all 0.15s !important;
-}
-.stButton > button:hover {
-  border-color: #555 !important;
-  color: #CCC !important;
-}
-
-.stTextInput > div > div > input {
-  background: #0A0A0A !important;
-  border: 1px solid #1A1A1A !important;
-  border-radius: 3px !important;
-  color: #CCC !important;
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.8rem !important;
-  padding: 0.6rem 0.9rem !important;
-}
-.stTextInput > div > div > input:focus {
-  border-color: #444 !important;
-  box-shadow: none !important;
-}
-.stTextInput > div > div > input::placeholder {
-  color: #2A2A2A !important;
-  font-style: italic;
-}
-
-[data-testid="stDataFrame"] {
-  border: 1px solid #141414 !important;
-  border-radius: 4px !important;
-}
-[data-testid="stDataFrame"] th {
-  background: #0A0A0A !important;
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.55rem !important;
-  letter-spacing: 0.12em !important;
-  text-transform: uppercase !important;
-  color: #333 !important;
-  border-bottom: 1px solid #1A1A1A !important;
-}
-[data-testid="stDataFrame"] td {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 0.72rem !important;
-  color: #555 !important;
-}
-
-::-webkit-scrollbar { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #333; }
-
-.modebar { display: none !important; }
-
+.stApp { background-color: #080810 !important; }
+.stMarkdown, .stText, .stTitle, .stHeader { color: #e2e8f0 !important; }
+.stContainer { background-color: #0f0f1a !important; border: 1px solid #1c1c2e !important; border-radius: 10px !important; padding: 16px !important; margin-bottom: 16px !important; }
+.stButton > button { background-color: #00e5a0 !important; color: #080810 !important; border: none !important; font-weight: bold !important; }
+.stCheckbox label, .stCheckbox span { color: #e2e8f0 !important; }
+.stSelectbox label, .stSelectbox > div > div { color: #e2e8f0 !important; }
+h1, h2, h3 { color: #00e5a0 !important; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f0f1a; }
+::-webkit-scrollbar-thumb { background: #00e5a0; border-radius: 3px; }
+.progress-bar-bg { background: #1c1c2e; border-radius: 4px; height: 8px; width: 100%; }
+.progress-bar-fill { background: linear-gradient(90deg, #00e5a0, #7c6fcd); border-radius: 4px; height: 8px; transition: width 0.5s; }
+.card { background: #0f0f1a; border: 1px solid #1c1c2e; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.card:hover { border-color: #00e5a0; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
+.b-core { background: rgba(0,229,160,0.12); color: #00e5a0; border: 1px solid rgba(0,229,160,0.25); }
+.b-ml { background: rgba(124,111,205,0.12); color: #a89ee8; border: 1px solid rgba(124,111,205,0.25); }
+.b-ai { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+.b-db { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.b-cloud { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+.b-tool { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+.b-stat { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+.b-dl { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
+.lv-beg { background: rgba(0,229,160,0.1); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.lv-int { background: rgba(245,158,11,0.1); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.lv-adv { background: rgba(239,68,68,0.1); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.status-not { background: rgba(100,116,139,0.2); color: #94a3b8; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.status-app { background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.status-int { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.status-off { background: rgba(0,229,160,0.2); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.status-rej { background: rgba(239,68,68,0.2); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.comp-low { background: rgba(0,229,160,0.15); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.comp-med { background: rgba(245,158,11,0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
 </style>
-""", unsafe_allow_html=True)
+"""
 
-st.markdown("""
-<div class="topbar">
-  <div class="tb-left">
-    <div class="tb-logo">IMDB Analytics</div>
-    <div class="tb-divider"></div>
-    <div class="tb-sub">Top 250 TV Shows · Intelligence Report</div>
-  </div>
-  <div class="tb-right">Data Source: IMDB · 250 Records</div>
-</div>
-<div class="bc">
-  <span>Analytics</span>
-  <span class="bc-sep">›</span>
-  <span>Television</span>
-  <span class="bc-sep">›</span>
-  <span class="bc-active">Top 250 Dashboard</span>
-</div>
-<div class="body-wrap">
-<div class="sec-header">
-  <div>
-    <div class="sec-eyebrow">Interactive Report · IMDB Data</div>
-    <div class="sec-title">TV Show Analytics</div>
-  </div>
-  <div class="sec-meta">
-    <div class="sec-meta-val">250</div>
-    <div class="sec-meta-label">Shows Analyzed</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+st.html(CSS)
 
-def cc(title, badge="IMDB · 2024"):
+# ---- DATA ----
+
+SKILLS = {
+    "🐍 Core Python": {
+        "badge": "b-core",
+        "id": "core",
+        "playlists": [
+            {
+                "title": "Python Tutorials – Data Science & Web Dev",
+                "channel": "Corey Schafer",
+                "desc": "Gold standard Python tutorials — OOP, Pandas, Matplotlib, Generators. Clear, structured, real examples.",
+                "dur": "~20 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PL-osiE80TeTt2d9bfVyTiXJA-UTHn6WwU",
+            },
+            {
+                "title": "Python for Beginners – Full Course",
+                "channel": "freeCodeCamp",
+                "desc": "4.5-hour comprehensive Python beginner course. Best single video to refresh fundamentals fast.",
+                "dur": "4.5 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=rfscVS0vtbw",
+            },
+            {
+                "title": "Data Analysis with Python & Pandas",
+                "channel": "Data School (Kevin Markham)",
+                "desc": "Best pandas playlist on YouTube. Practical real-world data manipulation, cleaning, merging.",
+                "dur": "~8 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/playlist?list=PL5-da3qGB5ICCsgW1MxlZ0Hq8LL5U3u9y",
+            },
+            {
+                "title": "Python Data Science Full Course",
+                "channel": "Codebasics (Dhaval Patel)",
+                "desc": "108-video Indian educator playlist. Covers Python + ML + Stats. Highly recommended for Indian fresher context.",
+                "dur": "~30 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLeo1K3hjS3us_ELKYSj_Fth2tIEkdKXvV",
+            },
+        ],
+    },
+    "🗄️ SQL / Database": {
+        "badge": "b-db",
+        "id": "db",
+        "playlists": [
+            {
+                "title": "Data Analyst Bootcamp – SQL Complete",
+                "channel": "Alex the Analyst",
+                "desc": "The #1 DA bootcamp. Covers SQL basics → intermediate → advanced → portfolio projects in one 20-hr playlist.",
+                "dur": "~20 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZ87vPPSfHqb6OcM0cF",
+            },
+            {
+                "title": "SQL Tutorial – Full Database Course",
+                "channel": "freeCodeCamp",
+                "desc": "4-hour complete relational DB + SQL fundamentals. MySQL focused. Great for interview prep.",
+                "dur": "4 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+            },
+            {
+                "title": "Advanced SQL Tutorials (CTEs, Temp Tables, Stored Procs)",
+                "channel": "Alex the Analyst",
+                "desc": "Short focused videos on advanced SQL concepts tested in DA interviews.",
+                "dur": "~2 hrs",
+                "level": "Advanced",
+                "link": "https://www.youtube.com/playlist?list=PLUaB-1hjhk8EBZNL4nx4Otoa5guqkep_n",
+            },
+            {
+                "title": "MySQL Tutorial for Beginners",
+                "channel": "Programming with Mosh",
+                "desc": "Professional quality 3-hr MySQL complete tutorial. Covers all fundamentals + joins + stored procedures.",
+                "dur": "3 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=7S_tz1z_5bA",
+            },
+        ],
+    },
+    "🤖 ML / Scikit-Learn": {
+        "badge": "b-ml",
+        "id": "ml",
+        "playlists": [
+            {
+                "title": "Scikit-Learn Tutorial – ML in Python",
+                "channel": "Data School (Kevin Markham)",
+                "desc": "Best scikit-learn playlist. Covers entire ML workflow: preprocessing, modeling, evaluation, pipelines.",
+                "dur": "~10 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/playlist?list=PL5-da3qGB5ICeMbQuqys6Us_2i-QbHOgA",
+            },
+            {
+                "title": "Machine Learning with Python – Complete Course",
+                "channel": "Codebasics",
+                "desc": "End-to-end ML course with Indian-context examples. Linear/logistic regression, trees, SVM, clustering.",
+                "dur": "~25 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLeo1K3hjS3uvCeTYTeyfe0-rN5r8zn9rw",
+            },
+            {
+                "title": "StatQuest: Machine Learning Fundamentals",
+                "channel": "StatQuest (Josh Starmer)",
+                "desc": "ESSENTIAL. Explains WHY algorithms work — decision trees, random forests, SVM, PCA, bias-variance. Highly visual.",
+                "dur": "~15 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/playlist?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF",
+            },
+            {
+                "title": "ML Full Course – freeCodeCamp",
+                "channel": "freeCodeCamp",
+                "desc": "Multiple full-length ML courses covering linear regression to neural nets with Python.",
+                "dur": "~12 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=NWONeJKn6kc",
+            },
+        ],
+    },
+    "🧠 TensorFlow / Deep Learning": {
+        "badge": "b-dl",
+        "id": "dl",
+        "playlists": [
+            {
+                "title": "TensorFlow 2.0 Complete Course",
+                "channel": "freeCodeCamp / Tim Ruscica",
+                "desc": "7-hour complete TensorFlow 2.0 course. Neural nets, CNNs, RNNs, NLP. Project-based.",
+                "dur": "7 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/watch?v=tPYj3fFJGjk",
+            },
+            {
+                "title": "Deep Learning with Python (Keras + TF)",
+                "channel": "Sentdex (Harrison Kinsley)",
+                "desc": "Hands-on deep learning. Builds models step by step. Great for practical understanding of TF/Keras.",
+                "dur": "~12 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/playlist?list=PLQVvvaa0QuDfhTox0AjmQ6tvTgMBZBEXN",
+            },
+            {
+                "title": "Neural Networks – 3Blue1Brown",
+                "channel": "3Blue1Brown (Grant Sanderson)",
+                "desc": "WATCH THIS FIRST. Beautiful visual explanation of how neural networks and backprop actually work. 4 videos.",
+                "dur": "1 hr",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi",
+            },
+            {
+                "title": "Krish Naik – Complete Deep Learning Playlist",
+                "channel": "Krish Naik",
+                "desc": "Comprehensive DL series from Indian ML educator. ANN, CNN, RNN, LSTM, Transfer Learning.",
+                "dur": "~20 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/playlist?list=PLZoTAELRMXVPGU70ZGsckrMdr0FteeRUi",
+            },
+        ],
+    },
+    "✨ LangChain / GenAI": {
+        "badge": "b-ai",
+        "id": "ai",
+        "playlists": [
+            {
+                "title": "Complete LangChain Course for Generative AI",
+                "channel": "Krish Naik",
+                "desc": "3-hr complete LangChain course. Chatbots, RAG pipelines, API deployment, Groq + HuggingFace integration.",
+                "dur": "3 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/watch?v=swCpkRLFWuQk",
+            },
+            {
+                "title": "LangChain v1 Crash Course – Build Autonomous Agents",
+                "channel": "Krish Naik",
+                "desc": "Latest LangChain v1. Agents, tools, structured output, Pydantic, streaming, human-in-the-loop.",
+                "dur": "2 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/watch?v=wCpkRLFWuQk",
+            },
+            {
+                "title": "Complete RAG Crash Course with LangChain",
+                "channel": "Krish Naik",
+                "desc": "2-hour RAG systems from scratch. FAISS, vector DBs, retrieval augmented generation. Directly relevant to VerifAI.",
+                "dur": "2 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/watch?v=sVcwVQRHIc8",
+            },
+            {
+                "title": "Generative AI Full Course 2025",
+                "channel": "freeCodeCamp",
+                "desc": "Complete GenAI landscape: LLMs, prompt engineering, fine-tuning, agents, RAG, deployment.",
+                "dur": "~10 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/watch?v=mEsleV16qdo",
+            },
+        ],
+    },
+    "⚡ FastAPI / Flask": {
+        "badge": "b-tool",
+        "id": "api",
+        "playlists": [
+            {
+                "title": "FastAPI Tutorial – Complete Beginners Course",
+                "channel": "Tech With Tim",
+                "desc": "Beginner FastAPI course. CRUD, Pydantic, path params, request bodies. Clean and practical.",
+                "dur": "~3 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=CBASjF0dYPU",
+            },
+            {
+                "title": "FastAPI – Full Course (Endpoints to Deployment)",
+                "channel": "Amigoscode",
+                "desc": "REST APIs with FastAPI, SQLAlchemy, PostgreSQL, deployment. Production-ready patterns.",
+                "dur": "~5 hrs",
+                "level": "Intermediate",
+                "link": "https://www.youtube.com/watch?v=0sOvCWFmrtA",
+            },
+            {
+                "title": "Flask Tutorial Series",
+                "channel": "Corey Schafer",
+                "desc": "Best Flask series on YouTube. 15 videos covering routes, templates, DB, login, deployment.",
+                "dur": "~8 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PL-osiE80TeTs4UjLw5MM6OjgkjFeUxCYH",
+            },
+            {
+                "title": "REST API with Python & Flask",
+                "channel": "freeCodeCamp",
+                "desc": "Build a complete REST API with Flask, authentication, and database from scratch.",
+                "dur": "~2 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=GMppyAPbLYk",
+            },
+        ],
+    },
+    "☁️ AWS / Cloud": {
+        "badge": "b-cloud",
+        "id": "cloud",
+        "playlists": [
+            {
+                "title": "AWS Tutorial for Beginners – Full 9hr Course",
+                "channel": "freeCodeCamp",
+                "desc": "Comprehensive AWS beginner course. EC2, S3, Lambda, networking, security, billing.",
+                "dur": "9 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=ulprqHHWlng",
+            },
+            {
+                "title": "AWS Fundamentals – Core Services",
+                "channel": "TechWorld with Nana",
+                "desc": "2.5-hr straight-to-the-point AWS course. IAM, EC2, S3, CloudFormation. Real-world practical focus.",
+                "dur": "2.5 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=ZB5ONbD_SMY",
+            },
+            {
+                "title": "AWS 107-Hour Cloud Project Bootcamp",
+                "channel": "freeCodeCamp / Andrew Brown",
+                "desc": "Full project bootcamp. Design, build, deploy real AWS cloud project end-to-end.",
+                "dur": "107 hrs",
+                "level": "Advanced",
+                "link": "https://www.youtube.com/watch?v=zA8guDqfv40",
+            },
+            {
+                "title": "Docker Tutorial for Beginners",
+                "channel": "TechWorld with Nana",
+                "desc": "Essential for cloud deployment. Docker concepts + hands-on. Pairs with FastAPI + AWS deployment.",
+                "dur": "3 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/watch?v=3c-iBn73dDE",
+            },
+        ],
+    },
+    "📊 Statistics / EDA": {
+        "badge": "b-stat",
+        "id": "stat",
+        "playlists": [
+            {
+                "title": "Statistics Fundamentals",
+                "channel": "StatQuest (Josh Starmer)",
+                "desc": "THE best stats playlist. Probability, distributions, hypothesis testing, p-values, correlation. Visual + clear.",
+                "dur": "~10 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLblh5JKOoLUK0FLuzwntyYI10UQFUhsY9",
+            },
+            {
+                "title": "Pandas Data Analysis – Visualization with Seaborn & Matplotlib",
+                "channel": "Corey Schafer",
+                "desc": "Matplotlib + Seaborn complete tutorials for data visualization. Directly for EDA projects.",
+                "dur": "~5 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PL-osiE80TeTvipOqomVEviRg7LUgV14B7",
+            },
+            {
+                "title": "Exploratory Data Analysis – Complete Python EDA",
+                "channel": "Krish Naik",
+                "desc": "Full EDA workflow in Python: missing values, outliers, feature engineering, visualization, correlation.",
+                "dur": "~6 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLZoTAELRMXVPzj1D0i_6ajJ6gyD22b3jh",
+            },
+            {
+                "title": "Data Analyst Bootcamp – Tableau + Power BI",
+                "channel": "Alex the Analyst",
+                "desc": "Visualization tools: Tableau and Power BI from scratch. Essential for DA roles needing BI dashboards.",
+                "dur": "~8 hrs",
+                "level": "Beginner",
+                "link": "https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZ87vPPSfHqb6OcM0cF",
+            },
+        ],
+    },
+}
+
+TOTAL_PLAYLISTS = sum(len(v["playlists"]) for v in SKILLS.values())
+
+JOB_TARGETS = [
+    {
+        "company": "Google",
+        "role": "Data Analyst / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "careers.google.com",
+        "link": "https://careers.google.com",
+    },
+    {
+        "company": "Microsoft",
+        "role": "Data Scientist / AI Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "careers.microsoft.com",
+        "link": "https://careers.microsoft.com",
+    },
+    {
+        "company": "Amazon",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "amazon.jobs",
+        "link": "https://amazon.jobs",
+    },
+    {
+        "company": "Meta",
+        "role": "Data Analyst / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "meta.com/careers",
+        "link": "https://www.metacareers.com",
+    },
+    {
+        "company": "Apple",
+        "role": "ML Engineer / Data Scientist",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "apple.com/jobs",
+        "link": "https://www.apple.com/jobs/us/",
+    },
+    {
+        "company": "Netflix",
+        "role": "Data Engineer / ML Engineer",
+        "sector": "Media",
+        "priority": "High",
+        "platform": "jobs.netflix.com",
+        "link": "https://jobs.netflix.com",
+    },
+    {
+        "company": "Spotify",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "Media",
+        "priority": "Medium",
+        "platform": "lifeatspotify.com",
+        "link": "https://www.lifeatspotify.com",
+    },
+    {
+        "company": "Uber",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "uber.com/careers",
+        "link": "https://www.uber.com/us/en/careers/",
+    },
+    {
+        "company": "Airbnb",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "airbnb.com/careers",
+        "link": "https://www.airbnb.com/careers",
+    },
+    {
+        "company": "LinkedIn",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "linkedin.com/careers",
+        "link": "https://www.linkedin.com/careers",
+    },
+    {
+        "company": "Salesforce",
+        "role": "Data Analyst / ML Engineer",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "salesforce.com/careers",
+        "link": "https://www.salesforce.com/company/careers/",
+    },
+    {
+        "company": "Adobe",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "adobe.com/careers",
+        "link": "https://www.adobe.com/careers.html",
+    },
+    {
+        "company": "Oracle",
+        "role": "Data Analyst / ML Engineer",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "oracle.com/careers",
+        "link": "https://www.oracle.com/careers/",
+    },
+    {
+        "company": "IBM",
+        "role": "Data Scientist / AI Engineer",
+        "sector": "Tech",
+        "priority": "Medium",
+        "platform": "ibm.com/careers",
+        "link": "https://www.ibm.com/careers/us-en/",
+    },
+    {
+        "company": "Intel",
+        "role": "ML Engineer / Data Scientist",
+        "sector": "Hardware",
+        "priority": "Medium",
+        "platform": "intel.com/content/www/us/en/jobs",
+        "link": "https://jobs.intel.com",
+    },
+    {
+        "company": "NVIDIA",
+        "role": "Deep Learning Engineer",
+        "sector": "Hardware",
+        "priority": "High",
+        "platform": "nvidia.com/en-us/careers",
+        "link": "https://www.nvidia.com/en-us/careers/",
+    },
+    {
+        "company": "Palantir",
+        "role": "Data Engineer / ML Engineer",
+        "sector": "Tech",
+        "priority": "High",
+        "platform": "palantir.com/careers",
+        "link": "https://www.palantir.com/careers/",
+    },
+    {
+        "company": "Snowflake",
+        "role": "Data Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "snowflake.com/careers",
+        "link": "https://www.snowflake.com/careers/",
+    },
+    {
+        "company": "Databricks",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "databricks.com/careers",
+        "link": "https://www.databricks.com/careers",
+    },
+    {
+        "company": "Cloudera",
+        "role": "Data Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "Low",
+        "platform": "cloudera.com/about/careers",
+        "link": "https://www.cloudera.com/about/careers.html",
+    },
+    {
+        "company": "DataRobot",
+        "role": "ML Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "datarobot.com/careers",
+        "link": "https://www.datarobot.com/careers/",
+    },
+    {
+        "company": "Alteryx",
+        "role": "Data Analyst / ML Engineer",
+        "sector": "SaaS",
+        "priority": "Low",
+        "platform": "alteryx.com/company/careers",
+        "link": "https://www.alteryx.com/company/careers",
+    },
+    {
+        "company": "Qlik",
+        "role": "Data Analyst",
+        "sector": "SaaS",
+        "priority": "Low",
+        "platform": "qlik.com/us/company/careers",
+        "link": "https://www.qlik.com/us/company/careers",
+    },
+    {
+        "company": "Workday",
+        "role": "Data Scientist",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "workday.com/careers",
+        "link": "https://www.workday.com/en-us/company/careers.html",
+    },
+    {
+        "company": "ServiceNow",
+        "role": "ML Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "servicenow.com/careers",
+        "link": "https://www.servicenow.com/careers",
+    },
+    {
+        "company": "Atlassian",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "atlassian.com/careers",
+        "link": "https://www.atlassian.com/careers",
+    },
+]
+
+LOW_COMPETITION = [
+    {
+        "company": "H2O.ai",
+        "role": "ML Engineer / Data Scientist",
+        "sector": "AI/ML SaaS",
+        "priority": "High",
+        "platform": "h2o.ai/careers",
+        "link": "https://www.h2o.ai/company/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "Dataiku",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "AI/ML SaaS",
+        "priority": "High",
+        "platform": "dataiku.com/careers",
+        "link": "https://www.dataiku.com/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "Scale AI",
+        "role": "ML Engineer / Data Analyst",
+        "sector": "AI/ML SaaS",
+        "priority": "High",
+        "platform": "scale.com/careers",
+        "link": "https://scale.com/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "C3.ai",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "AI/ML SaaS",
+        "priority": "High",
+        "platform": "c3.ai/careers",
+        "link": "https://www.c3.ai/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "Databricks",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "databricks.com/careers",
+        "link": "https://www.databricks.com/careers",
+        "comp": "MED",
+    },
+    {
+        "company": "Snowflake",
+        "role": "Data Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "snowflake.com/careers",
+        "link": "https://www.snowflake.com/careers/",
+        "comp": "MED",
+    },
+    {
+        "company": "Alteryx",
+        "role": "Data Analyst / ML Engineer",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "alteryx.com/careers",
+        "link": "https://www.alteryx.com/company/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "Qlik",
+        "role": "Data Analyst",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "qlik.com/careers",
+        "link": "https://www.qlik.com/us/company/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "Trifacta (Google)",
+        "role": "Data Engineer / Analyst",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "trifacta.com/careers",
+        "link": "https://www.trifacta.com/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "ThoughtSpot",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "thoughtspot.com/careers",
+        "link": "https://www.thoughtspot.com/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "Fivetran",
+        "role": "Data Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "fivetran.com/careers",
+        "link": "https://www.fivetran.com/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "Monte Carlo",
+        "role": "Data Engineer / Analyst",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "montecarlodata.com/careers",
+        "link": "https://www.montecarlodata.com/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "dbt Labs",
+        "role": "Data Engineer / Analyst",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "getdbt.com/careers",
+        "link": "https://www.getdbt.com/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "HashiCorp",
+        "role": "Data Engineer / SRE",
+        "sector": "DevOps/SaaS",
+        "priority": "Medium",
+        "platform": "hashicorp.com/careers",
+        "link": "https://www.hashicorp.com/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "Confluent",
+        "role": "Data Engineer / Platform Engineer",
+        "sector": "SaaS",
+        "priority": "High",
+        "platform": "confluent.io/careers",
+        "link": "https://www.confluent.io/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "Elastic",
+        "role": "ML Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "elastic.co/careers",
+        "link": "https://www.elastic.co/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "MongoDB",
+        "role": "Data Engineer / Data Scientist",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "mongodb.com/company/careers",
+        "link": "https://www.mongodb.com/company/careers",
+        "comp": "MED",
+    },
+    {
+        "company": "Neo4j",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "SaaS",
+        "priority": "Medium",
+        "platform": "neo4j.com/careers",
+        "link": "https://www.neo4j.com/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "RapidMiner",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "AI/ML SaaS",
+        "priority": "Low",
+        "platform": "rapidminer.com/careers",
+        "link": "https://www.rapidminer.com/careers/",
+        "comp": "LOW",
+    },
+    {
+        "company": "HPE",
+        "role": "Data Engineer / ML Engineer",
+        "sector": "Enterprise",
+        "priority": "Low",
+        "platform": "hpe.com/careers",
+        "link": "https://www.hpe.com/us/en/careers.html",
+        "comp": "LOW",
+    },
+    {
+        "company": "Teradata",
+        "role": "Data Analyst / Data Engineer",
+        "sector": "Enterprise",
+        "priority": "Low",
+        "platform": "teradata.com/careers",
+        "link": "https://www.teradata.com/careers",
+        "comp": "LOW",
+    },
+    {
+        "company": "SAP",
+        "role": "Data Scientist / ML Engineer",
+        "sector": "Enterprise",
+        "priority": "Medium",
+        "platform": "sap.com/careers",
+        "link": "https://www.sap.com/about/careers.html",
+        "comp": "MED",
+    },
+    {
+        "company": "Informatica",
+        "role": "Data Engineer / Data Analyst",
+        "sector": "Enterprise",
+        "priority": "Low",
+        "platform": "informatica.com/careers",
+        "link": "https://www.informatica.com/about-us/careers.html",
+        "comp": "LOW",
+    },
+]
+
+ROADMAP = [
+    {
+        "week": "Week 1-2",
+        "title": "Foundation Refresh",
+        "items": [
+            "Python for Data Science (Corey Schafer)",
+            "Pandas & NumPy (Data School)",
+            "SQL Basics → Advanced (Alex the Analyst)",
+            "Build: EDA project on Kaggle dataset",
+        ],
+    },
+    {
+        "week": "Week 3-4",
+        "title": "ML Core Skills",
+        "items": [
+            "Scikit-Learn full playlist (Data School)",
+            "StatQuest Statistics Fundamentals",
+            "ML with Python (Codebasics)",
+            "Build: Customer Churn model",
+        ],
+    },
+    {
+        "week": "Week 5-6",
+        "title": "Deep Learning + APIs",
+        "items": [
+            "TensorFlow/Keras (Sentdex / freeCodeCamp)",
+            "FastAPI complete course (Tech With Tim)",
+            "Flask tutorials (Corey Schafer)",
+            "Build: ML model served as FastAPI endpoint",
+        ],
+    },
+    {
+        "week": "Week 7-8",
+        "title": "GenAI + Cloud Deploy",
+        "items": [
+            "LangChain complete (Krish Naik)",
+            "RAG pipeline + Agents (Krish Naik)",
+            "AWS basics (freeCodeCamp / TechWorld Nana)",
+            "Build: Deploy on AWS / Oracle Cloud",
+        ],
+    },
+]
+
+# ---- SESSION INIT ----
+if "watched" not in st.session_state:
+    st.session_state.watched = set()
+
+if "job_status" not in st.session_state:
+    st.session_state.job_status = {c["company"]: "Not Applied" for c in JOB_TARGETS}
+
+if "low_comp_status" not in st.session_state:
+    st.session_state.low_comp_status = {
+        c["company"]: "Not Applied" for c in LOW_COMPETITION
+    }
+
+
+# ---- PAGE 1 ----
+def page_playlists():
+    st.title("📚 Skill Playlists — Job Ready 2026")
+    st.markdown(
+        "**All skills from resume · 100% Free · YouTube only · Data Analyst / AI-ML ready**"
+    )
+
+    with st.sidebar:
+        st.header("🔍 Filter")
+        selected = st.radio("Category", ["All"] + list(SKILLS.keys()), index=0)
+
+    done_count = len(st.session_state.watched)
+    pct = int(done_count / TOTAL_PLAYLISTS * 100)
+
     st.markdown(f"""
-    <div class="cc">
-      <div class="cc-head">
-        <div class="cc-title">{title}</div>
-        <div class="cc-badge">{badge}</div>
-      </div>
+    <div class="progress-bar-bg" style="max-width:600px">
+        <div class="progress-bar-fill" style="width:{pct}%"></div>
     </div>
-    """, unsafe_allow_html=True)
+    <p style="color:#64748b;font-family:monospace;font-size:11px;margin-top:4px">{done_count} / {TOTAL_PLAYLISTS} playlists watched · {pct}% job-ready</p>
+    """)
 
-def render_insights(text):
-    items = [i.strip().lstrip("•-▸0123456789. ") for i in text.split("\n") if i.strip()][:5]
-    rows = "".join([f"""
-    <div class="ai-item">
-      <div class="ai-n">{str(i+1).zfill(2)}</div>
-      <div>{item}</div>
-    </div>""" for i, item in enumerate(items)])
-    
-    st.markdown(f"""
-    <div class="ai-wrap">
-      <div class="ai-head">
-        <div class="ai-dot"></div>
-        AI Analysis · Generated Insights
-      </div>
-      {rows}
+    categories = (
+        list(SKILLS.items()) if selected == "All" else [(selected, SKILLS[selected])]
+    )
+
+    for cat_name, cat_data in categories:
+        with st.container():
+            st.markdown(
+                f"### {cat_name} <span class='badge {cat_data['badge']}'>{cat_data['id'].upper()}</span>",
+                unsafe_allow_html=True,
+            )
+
+        for i, pl in enumerate(cat_data["playlists"]):
+            key = f"{cat_data['id']}-{i}"
+            checked = key in st.session_state.watched
+
+            col1, col2, col3, col4, col5, col6 = st.columns([1, 5, 1, 1, 1, 1])
+
+            lv_class = {
+                "Beginner": "lv-beg",
+                "Intermediate": "lv-int",
+                "Advanced": "lv-adv",
+            }.get(pl["level"], "lv-beg")
+            strike = "text-decoration:line-through;opacity:0.5" if checked else ""
+
+            with col1:
+                new_val = st.checkbox("", value=checked, key=f"cb_{key}")
+                if new_val and not checked:
+                    st.session_state.watched.add(key)
+                elif not new_val and checked:
+                    st.session_state.watched.discard(key)
+
+            with col2:
+                st.markdown(
+                    f"""<div style="{strike}"><strong>{pl["title"]}</strong><br>
+                <span style="color:#64748b;font-size:11px">📺 {pl["channel"]}</span><br>
+                <span style="color:#334155;font-size:11px">{pl["desc"]}</span></div>""",
+                    unsafe_allow_html=True,
+                )
+
+            with col3:
+                st.markdown(
+                    f"<span style='color:#f59e0b;font-family:monospace;font-size:11px'>{pl['dur']}</span>",
+                    unsafe_allow_html=True,
+                )
+
+            with col4:
+                st.markdown(
+                    f"<span class='{lv_class}'>{pl['level']}</span>",
+                    unsafe_allow_html=True,
+                )
+
+            with col5:
+                st.markdown(
+                    f"<a href='{pl['link']}' target='_blank' style='color:#00e5a0;text-decoration:none;border:1px solid rgba(0,229,160,0.3);padding:4px 8px;border-radius:4px;font-family:monospace;font-size:10px'>▶ Watch</a>",
+                    unsafe_allow_html=True,
+                )
+
+            with col6:
+                st.markdown("✅" if checked else "⭕", unsafe_allow_html=True)
+
+            st.divider()
+
+    st.markdown("---")
+    st.markdown("## 🗺️ 8-Week Job-Ready Study Roadmap")
+
+    cols = st.columns(4)
+    for i, week in enumerate(ROADMAP):
+        with cols[i]:
+            with st.container():
+                st.markdown(f"**{week['week']}**")
+                st.markdown(f"### {week['title']}")
+                for item in week["items"]:
+                    st.markdown(
+                        f"<span style='color:#00e5a0'>→</span> <span style='color:#64748b;font-size:11px'>{item}</span>",
+                        unsafe_allow_html=True,
+                    )
+
+
+# ---- PAGE 2 ----
+def page_job_targets():
+    st.title("🎯 Job Targets — 28 Companies")
+
+    sectors = ["All"] + sorted(set(c["sector"] for c in JOB_TARGETS))
+    with st.sidebar:
+        st.header("🔍 Filter")
+        sel_sector = st.selectbox("Sector", sectors)
+
+    filtered = (
+        JOB_TARGETS
+        if sel_sector == "All"
+        else [c for c in JOB_TARGETS if c["sector"] == sel_sector]
+    )
+
+    statuses = list(st.session_state.job_status.values())
+    st.markdown(
+        f"""
+    <div style="display:flex;gap:16px;margin-bottom:20px">
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#e2e8f0;font-size:24px;font-weight:bold">{len(JOB_TARGETS)}</div>
+            <div style="color:#64748b;font-size:11px">Total</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#60a5fa;font-size:24px;font-weight:bold">{statuses.count("Applied")}</div>
+            <div style="color:#64748b;font-size:11px">Applied</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#fbbf24;font-size:24px;font-weight:bold">{statuses.count("Interview")}</div>
+            <div style="color:#64748b;font-size:11px">Interview</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#00e5a0;font-size:24px;font-weight:bold">{statuses.count("Offer")}</div>
+            <div style="color:#64748b;font-size:11px">Offer</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#f87171;font-size:24px;font-weight:bold">{statuses.count("Rejected")}</div>
+            <div style="color:#64748b;font-size:11px">Rejected</div>
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
-with st.sidebar:
-    st.markdown("""
-    <div class="sb-head">
-      <div class="sb-title">Controls</div>
+    for c in filtered:
+        status = st.session_state.job_status[c["company"]]
+        prio_color = {"High": "#00e5a0", "Medium": "#fbbf24", "Low": "#64748b"}.get(
+            c["priority"], "#64748b"
+        )
+
+        with st.container():
+            col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 1, 1, 1, 1])
+            with col1:
+                st.markdown(f"**{c['company']}**")
+            with col2:
+                st.markdown(
+                    f"<span style='color:#64748b;font-size:11px'>{c['role']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col3:
+                st.markdown(
+                    f"<span style='color:{prio_color};font-size:11px'>{c['priority']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col4:
+                st.markdown(
+                    f"<span style='color:#64748b;font-size:11px'>{c['sector']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col5:
+                new_status = st.selectbox(
+                    "",
+                    ["Not Applied", "Applied", "Interview", "Offer", "Rejected"],
+                    index=[
+                        "Not Applied",
+                        "Applied",
+                        "Interview",
+                        "Offer",
+                        "Rejected",
+                    ].index(status)
+                    if status
+                    in ["Not Applied", "Applied", "Interview", "Offer", "Rejected"]
+                    else 0,
+                    key=f"job_{c['company']}",
+                    label_visibility="collapsed",
+                )
+                st.session_state.job_status[c["company"]] = new_status
+            with col6:
+                st.markdown(
+                    f"<a href='{c['link']}' target='_blank' style='color:#00e5a0;text-decoration:none;font-size:11px'>Apply ↗</a>",
+                    unsafe_allow_html=True,
+                )
+
+            st.divider()
+
+
+# ---- PAGE 3 ----
+def page_low_comp():
+    st.title("🏆 Low Competition Targets — 25 Companies")
+    st.markdown("Companies with less applicant crowd — higher response rates")
+
+    sectors = ["All"] + sorted(set(c["sector"] for c in LOW_COMPETITION))
+    with st.sidebar:
+        st.header("🔍 Filter")
+        sel_sector = st.selectbox("Sector", sectors, key="lc_sector")
+
+    filtered = (
+        LOW_COMPETITION
+        if sel_sector == "All"
+        else [c for c in LOW_COMPETITION if c["sector"] == sel_sector]
+    )
+
+    statuses = list(st.session_state.low_comp_status.values())
+    st.markdown(
+        f"""
+    <div style="display:flex;gap:16px;margin-bottom:20px">
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#e2e8f0;font-size:24px;font-weight:bold">{len(LOW_COMPETITION)}</div>
+            <div style="color:#64748b;font-size:11px">Total</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#60a5fa;font-size:24px;font-weight:bold">{statuses.count("Applied")}</div>
+            <div style="color:#64748b;font-size:11px">Applied</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#fbbf24;font-size:24px;font-weight:bold">{statuses.count("Interview")}</div>
+            <div style="color:#64748b;font-size:11px">Interview</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#00e5a0;font-size:24px;font-weight:bold">{statuses.count("Offer")}</div>
+            <div style="color:#64748b;font-size:11px">Offer</div>
+        </div>
+        <div style="background:#0f0f1a;border:1px solid #1c1c2e;border-radius:8px;padding:12px 20px;text-align:center">
+            <div style="color:#f87171;font-size:24px;font-weight:bold">{statuses.count("Rejected")}</div>
+            <div style="color:#64748b;font-size:11px">Rejected</div>
+        </div>
     </div>
-    <div class="sb-section">
-      <div class="sb-label">— Dataset Filters</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    type_filter = st.selectbox("Show Type", ["All", "TV Series", "TV Mini Series"])
-    decade_filter = st.selectbox("Decade", ["All", "1990s", "2000s", "2010s", "2020s"])
-    age_filter = st.selectbox("Age Rating", ["All", "PG", "15", "18", "Unknown"])
-    
-    st.markdown("""
-    <div class="sb-section" style="margin-top:1rem">
-      <div class="sb-label">— Range Filters</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    min_rating = st.slider("Min Rating", 8.5, 9.5, 8.5, 0.1, format="%.1f")
-    min_votes = st.slider("Min Votes", 0, 2200000, 0, 50000, format="%d")
+    """,
+        unsafe_allow_html=True,
+    )
 
-filtered = df.copy()
-if type_filter != "All": filtered = filtered[filtered['Type'] == type_filter]
-if decade_filter != "All": filtered = filtered[filtered['Decade'] == decade_filter]
-if age_filter != "All": filtered = filtered[filtered['Age'] == age_filter]
-filtered = filtered[filtered['Rating'] >= min_rating]
-filtered = filtered[filtered['Votes'] >= min_votes]
+    for c in filtered:
+        status = st.session_state.low_comp_status[c["company"]]
+        prio_color = {"High": "#00e5a0", "Medium": "#fbbf24", "Low": "#64748b"}.get(
+            c["priority"], "#64748b"
+        )
+        comp_class = "comp-low" if c["comp"] == "LOW" else "comp-med"
 
-k1, k2, k3, k4 = st.columns(4)
-with k1:
-    st.metric("Total Shows", f"{len(filtered):,}", "IMDB Top 250")
-with k2:
-    st.metric("Avg Rating", f"{filtered['Rating'].mean():.2f}", "of 10.0")
-with k3:
-    votes = filtered['Votes'].sum()
-    st.metric("Total Votes", f"{votes/1e6:.1f}M", "Community votes")
-with k4:
-    st.metric("Avg Episodes", f"{int(filtered['Episodes'].mean())}", "Per show")
+        with st.container():
+            col1, col2, col3, col4, col5, col6, col7 = st.columns([2, 2, 1, 1, 1, 1, 1])
+            with col1:
+                st.markdown(f"**{c['company']}**")
+            with col2:
+                st.markdown(
+                    f"<span style='color:#64748b;font-size:11px'>{c['role']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col3:
+                st.markdown(
+                    f"<span class='{comp_class}'>{c['comp']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col4:
+                st.markdown(
+                    f"<span style='color:{prio_color};font-size:11px'>{c['priority']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col5:
+                st.markdown(
+                    f"<span style='color:#64748b;font-size:11px'>{c['sector']}</span>",
+                    unsafe_allow_html=True,
+                )
+            with col6:
+                new_status = st.selectbox(
+                    "",
+                    ["Not Applied", "Applied", "Interview", "Offer", "Rejected"],
+                    index=[
+                        "Not Applied",
+                        "Applied",
+                        "Interview",
+                        "Offer",
+                        "Rejected",
+                    ].index(status)
+                    if status
+                    in ["Not Applied", "Applied", "Interview", "Offer", "Rejected"]
+                    else 0,
+                    key=f"lc_{c['company']}",
+                    label_visibility="collapsed",
+                )
+                st.session_state.low_comp_status[c["company"]] = new_status
+            with col7:
+                st.markdown(
+                    f"<a href='{c['link']}' target='_blank' style='color:#00e5a0;text-decoration:none;font-size:11px'>Apply ↗</a>",
+                    unsafe_allow_html=True,
+                )
 
-st.markdown("<div style='margin-bottom:1.5rem'></div>", unsafe_allow_html=True)
+            st.divider()
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Overview", "Trends", "Deep Dive", "AI Insights", "Search"])
 
-with tab1:
-    c1, c2 = st.columns(2)
-    with c1:
-        cc("Top 10 Shows by Rating", "Rating · 9.5 max")
-        top10 = filtered.nlargest(10, 'Rating').sort_values('Rating')
-        fig1 = px.bar(top10, y='Title', x='Rating', orientation='h', color='Rating', color_continuous_scale=['#444444', '#FFFFFF'])
-        fig1.update_layout(**BW_CHART, height=300, coloraxis_showscale=False)
-        st.plotly_chart(fig1, use_container_width=True)
-    with c2:
-        cc("Rating Distribution", "Histogram · 20 bins")
-        fig2 = px.histogram(filtered, x='Rating', nbins=20, color_discrete_sequence=['#FFFFFF'])
-        fig2.update_layout(**BW_CHART, height=300, bargap=0.1)
-        st.plotly_chart(fig2, use_container_width=True)
-    c3, c4 = st.columns(2)
-    with c3:
-        cc("Type Distribution", "Series vs Mini Series")
-        type_counts = filtered['Type'].value_counts()
-        fig3 = go.Figure(data=[go.Pie(labels=type_counts.index, values=type_counts.values, hole=0.6, marker=dict(colors=['#FFFFFF', '#555555']))])
-        fig3.update_layout(**BW_CHART, height=250, showlegend=True)
-        st.plotly_chart(fig3, use_container_width=True)
-    with c4:
-        cc("Age Rating Distribution", "Content Ratings")
-        age_counts = filtered['Age'].value_counts().head(8)
-        fig4 = px.bar(x=age_counts.index, y=age_counts.values, color_discrete_sequence=['#FFFFFF'])
-        fig4.update_layout(**BW_CHART, height=250)
-        st.plotly_chart(fig4, use_container_width=True)
-
-with tab2:
-    c5, c6 = st.columns(2)
-    with c5:
-        cc("Shows per Decade", "Trend Analysis")
-        decade_order = ['1990s', '2000s', '2010s', '2020s']
-        dc = filtered['Decade'].value_counts().reindex([d for d in decade_order if d in filtered['Decade'].unique()])
-        fig5 = px.bar(x=dc.index, y=dc.values, color_discrete_sequence=['#FFFFFF'])
-        fig5.update_traces(texttemplate='%{y}', textposition='outside')
-        fig5.update_layout(**BW_CHART, height=300)
-        st.plotly_chart(fig5, use_container_width=True)
-    with c6:
-        cc("Avg Rating by Decade", "Quality Trend")
-        rd = filtered.groupby('Decade')['Rating'].mean()
-        rd = rd.reindex([d for d in decade_order if d in rd.index])
-        fig6 = px.line(x=rd.index, y=rd.values, markers=True, color_discrete_sequence=['#FFFFFF'])
-        fig6.update_traces(line_width=3, marker_size=8)
-        fig6.update_layout(**BW_CHART, height=300)
-        fig6.update_yaxes(range=[8.5, 9.1])
-        st.plotly_chart(fig6, use_container_width=True)
-    cc("Rating Tier Breakdown", "Elite · Excellent · Great · Good")
-    tier_order = ['Elite', 'Excellent', 'Great', 'Good']
-    tc = filtered['Rating_Tier'].value_counts().reindex([t for t in tier_order if t in filtered['Rating_Tier'].unique()])
-    fig7 = px.bar(x=tc.index, y=tc.values, color_discrete_sequence=['#FFFFFF'])
-    fig7.update_layout(**BW_CHART, height=250)
-    st.plotly_chart(fig7, use_container_width=True)
-
-with tab3:
-    c7, c8 = st.columns(2)
-    with c7:
-        cc("Rating vs Votes", "Popularity Analysis")
-        fig8 = px.scatter(filtered, x='Votes', y='Rating', size='Episodes', color='Type', hover_name='Title', color_discrete_map={'TV Series': '#FFFFFF', 'TV Mini Series': '#888888'})
-        fig8.update_layout(**BW_CHART, height=350)
-        st.plotly_chart(fig8, use_container_width=True)
-    with c8:
-        cc("Episodes vs Rating", "Length-Quality")
-        fig9 = px.scatter(filtered, x='Episodes', y='Rating', hover_name='Title', hover_data={'Start_Year': True}, color_discrete_sequence=['#FFFFFF'])
-        fig9.update_layout(**BW_CHART, height=350)
-        st.plotly_chart(fig9, use_container_width=True)
-    cc("Top 10 Shows", "Highest Rated")
-    top10_table = filtered.nlargest(10, 'Rating')[['Title', 'Rating', 'Votes', 'Type', 'Start_Year', 'Episodes']]
-    top10_table['Votes'] = top10_table['Votes'].apply(lambda x: f"{x/1e6:.1f}M" if x >= 1e6 else f"{x/1e3:.0f}K")
-    st.dataframe(top10_table, use_container_width=True, hide_index=True)
-
-with tab4:
-    if st.button("Generate AI Insights"):
-        with st.spinner("Analyzing data..."):
-            insights = generate_insights(filtered)
-        render_insights(insights)
-    cc("Hidden Gems", "Rating ≥9.0 · Votes <200K")
-    hidden = filtered[(filtered['Rating'] >= 9.0) & (filtered['Votes'] < 200000)].sort_values('Rating', ascending=False)
-    if len(hidden) > 0:
-        st.dataframe(hidden[['Title', 'Rating', 'Votes', 'Type', 'Start_Year']], use_container_width=True, hide_index=True)
-    else:
-        st.markdown("<p style='color: #555555;'>No hidden gems found with current filters.</p>", unsafe_allow_html=True)
-
-with tab5:
-    search = st.text_input("Search by show title", "")
-    if search:
-        results = filtered[filtered['Title'].str.contains(search, case=False, na=False)]
-        for _, show in results.iterrows():
-            st.markdown(f"""
-            <div class="show-card">
-                <div class="show-rank">#{filtered.index.get_loc(show.name) + 1}</div>
-                <div class="show-title">{show['Title']}</div>
-                <div class="show-stats">
-                    <div>
-                        <div class="show-stat-val">{show['Rating']}</div>
-                        <div class="show-stat-label">Rating</div>
-                    </div>
-                    <div>
-                        <div class="show-stat-val">{show['Start_Year']}</div>
-                        <div class="show-stat-label">Year</div>
-                    </div>
-                    <div>
-                        <div class="show-stat-val">{show['Episodes']}</div>
-                        <div class="show-stat-label">Episodes</div>
-                    </div>
-                    <div>
-                        <div class="show-stat-val">{show['Votes']:,}</div>
-                        <div class="show-stat-label">Votes</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
+# ---- NAVIGATION ----
+pg = st.navigation(
+    ["📚 Skill Playlists", "🎯 Job Targets", "🏆 Low Competition Targets"]
+)
+pg.run()
