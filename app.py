@@ -25,6 +25,7 @@ h1, h2, h3 { color: #00e5a0 !important; }
 .b-tool { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
 .b-stat { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
 .b-dl { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
+.b-cert { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
 .lv-beg { background: rgba(0,229,160,0.1); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
 .lv-int { background: rgba(245,158,11,0.1); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
 .lv-adv { background: rgba(239,68,68,0.1); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 10px; }

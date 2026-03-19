@@ -57,9 +57,14 @@ for cat_name, cat_data in categories:
                 st.session_state.watched.discard(key)
 
         with col2:
+            provider = ""
+            if "Anthropic" in pl["channel"]:
+                provider = " <span style='background:rgba(217,119,6,0.12);color:#d97706;padding:1px 6px;border-radius:3px;font-size:9px;font-family:monospace'>ANTHROPIC</span>"
+            elif "NVIDIA" in pl["channel"]:
+                provider = " <span style='background:rgba(118,185,71,0.12);color:#76b947;padding:1px 6px;border-radius:3px;font-size:9px;font-family:monospace'>NVIDIA</span>"
             st.markdown(
-                f"""<div style="{strike}"><strong>{pl["title"]}</strong><br>
-            <span style="color:#64748b;font-size:11px">📺 {pl["channel"]}</span><br>
+                f"""<div style="{strike}"><strong>{pl["title"]}</strong>{provider}<br>
+            <span style="color:#64748b;font-size:11px">{pl["channel"]}</span><br>
             <span style="color:#334155;font-size:11px">{pl["desc"]}</span></div>""",
                 unsafe_allow_html=True,
             )
