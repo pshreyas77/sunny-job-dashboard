@@ -3,39 +3,63 @@ import streamlit as st
 st.set_page_config(page_title="Shreyas Job Tracker 2026", layout="wide")
 
 CSS = """
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-.stApp { background-color: #080810 !important; }
-h1, h2, h3 { color: #00e5a0 !important; }
-.stMarkdown, .stText, .stTitle, .stHeader { color: #e2e8f0 !important; }
-.stContainer { background-color: #0f0f1a !important; border: 1px solid #1c1c2e !important; border-radius: 10px !important; padding: 16px !important; margin-bottom: 16px !important; }
-.stButton > button { background-color: #00e5a0 !important; color: #080810 !important; border: none !important; font-weight: bold !important; }
-.stCheckbox label, .stCheckbox span { color: #e2e8f0 !important; }
-.stSelectbox label, .stSelectbox > div > div { color: #e2e8f0 !important; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0f0f1a; }
-::-webkit-scrollbar-thumb { background: #00e5a0; border-radius: 3px; }
-.progress-bar-bg { background: #1c1c2e; border-radius: 4px; height: 8px; width: 100%; }
-.progress-bar-fill { background: linear-gradient(90deg, #00e5a0, #7c6fcd); border-radius: 4px; height: 8px; transition: width 0.5s; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
-.b-core { background: rgba(0,229,160,0.12); color: #00e5a0; border: 1px solid rgba(0,229,160,0.25); }
-.b-ml { background: rgba(124,111,205,0.12); color: #a89ee8; border: 1px solid rgba(124,111,205,0.25); }
-.b-ai { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
-.b-db { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
-.b-cloud { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
-.b-tool { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
-.b-stat { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
-.b-dl { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
-.b-cert { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
-.lv-beg { background: rgba(0,229,160,0.1); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.lv-int { background: rgba(245,158,11,0.1); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.lv-adv { background: rgba(239,68,68,0.1); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.status-not { background: rgba(100,116,139,0.2); color: #94a3b8; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.status-app { background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.status-int { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.status-off { background: rgba(0,229,160,0.2); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.status-rej { background: rgba(239,68,68,0.2); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.comp-low { background: rgba(0,229,160,0.15); color: #00e5a0; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
-.comp-med { background: rgba(245,158,11,0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+/* ═══ THE SKILLS GAZETTE — Black & White Editorial ═══ */
+.stApp { background-color: #ffffff !important; font-family: 'DM Sans', sans-serif !important; }
+
+/* Ruled lines */
+.stApp::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: repeating-linear-gradient(180deg, transparent, transparent 39px, rgba(0,0,0,0.06) 39px, rgba(0,0,0,0.06) 40px);
+  pointer-events: none; z-index: 0;
+}
+
+h1, h2, h3 { color: #000000 !important; font-family: 'Playfair Display', serif !important; letter-spacing: -0.5px !important; }
+.stMarkdown, .stText, .stTitle, .stHeader { color: #000000 !important; font-family: 'DM Sans', sans-serif !important; }
+.stContainer { background-color: #ffffff !important; border: 1px solid #000000 !important; border-radius: 0 !important; padding: 16px !important; margin-bottom: 0 !important; }
+.stButton > button { background-color: #000000 !important; color: #ffffff !important; border: 1.5px solid #000000 !important; font-weight: bold !important; font-family: 'IBM Plex Mono', monospace !important; font-size: 10px !important; letter-spacing: 1.5px !important; text-transform: uppercase !important; border-radius: 0 !important; transition: all 0.15s !important; }
+.stButton > button:hover { background-color: #ffffff !important; color: #000000 !important; }
+.stCheckbox label, .stCheckbox span { color: #000000 !important; }
+.stSelectbox label, .stSelectbox > div > div { color: #000000 !important; font-family: 'IBM Plex Mono', monospace !important; }
+.stRadio label { color: #000000 !important; font-family: 'IBM Plex Mono', monospace !important; font-size: 11px !important; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #ffffff; }
+::-webkit-scrollbar-thumb { background: #000000; }
+
+/* Progress bar — thin solid black */
+.progress-bar-bg { background: #ffffff; border: 1px solid #000000; border-radius: 0; height: 2px; width: 100%; }
+.progress-bar-fill { background: #000000; border-radius: 0; height: 100%; transition: width 0.5s; }
+
+/* Badges — black border on white */
+.badge { display: inline-block; padding: 2px 10px; border-radius: 0; font-size: 9px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+.b-core { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-ml { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-ai { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-db { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-cloud { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-tool { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-stat { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-dl { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+.b-cert { background: #ffffff; color: #000000; border: 1.5px solid #000000; }
+
+/* Level pills — B/W inversion */
+.lv-beg { background: #ffffff; color: #000000; padding: 3px 8px; border: 1.5px solid #000000; font-size: 8px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; }
+.lv-int { background: #000000; color: #ffffff; padding: 3px 8px; border: 1.5px solid #000000; font-size: 8px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; }
+.lv-adv { background: #ffffff; color: #000000; padding: 3px 8px; border: 1.5px solid #000000; font-size: 8px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 2px; }
+
+/* Job status pills — B/W only */
+.status-not { background: #ffffff; color: #000000; padding: 3px 8px; border: 1px solid #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.status-app { background: #000000; color: #ffffff; padding: 3px 8px; border: 1px solid #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.status-int { background: #ffffff; color: #000000; padding: 3px 8px; border: 1.5px solid #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; }
+.status-off { background: #000000; color: #ffffff; padding: 3px 8px; border: 1px solid #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.status-rej { background: #ffffff; color: #000000; padding: 3px 8px; border: 1px dashed #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+
+/* Competition pills */
+.comp-low { background: #ffffff; color: #000000; padding: 3px 8px; border: 1.5px solid #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; }
+.comp-med { background: #000000; color: #ffffff; padding: 3px 8px; border: 1.5px solid #000000; font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; }
 </style>
 """
 
