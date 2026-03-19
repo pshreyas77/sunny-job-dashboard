@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunny's Skill Playlists — Job Ready 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0f0f1a;
+  --card: #12121f;
+  --border: #1c1c2e;
+  --accent: #00e5a0;
+  --accent2: #7c6fcd;
+  --warn: #f59e0b;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --dim: #334155;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,160,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,160,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+/* Header */
+header { padding: 48px 0 24px; }
+.eyebrow { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+h1 { font-size: clamp(26px,4.5vw,46px); font-weight:800; line-height:1.1; letter-spacing:-1px; }
+h1 em { color:var(--accent); font-style:normal; }
+.subtitle { color:var(--muted); font-size:13px; margin-top:10px; font-family:'Space Mono',monospace; }
+
+/* Progress bar */
+.progress-bar { background:var(--border); border-radius:4px; height:6px; margin-top:20px; overflow:hidden; max-width:500px; }
+.progress-fill { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:4px; transition:width 0.6s; }
+.progress-label { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); margin-top:6px; }
+
+/* Skill filter tabs */
+.tabs { display:flex; gap:8px; flex-wrap:wrap; margin:28px 0 20px; }
+.tab { background:var(--card); border:1px solid var(--border); color:var(--muted); font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:7px 14px; border-radius:6px; cursor:pointer; transition:all 0.2s; }
+.tab:hover, .tab.active { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,0.06); }
+
+/* Skill sections */
+.skill-section { margin-bottom: 28px; }
+.skill-header {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 18px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px 10px 0 0;
+  cursor:pointer;
+  transition:border-color 0.2s;
+}
+.skill-header:hover { border-color:var(--accent); }
+.skill-icon { font-size:22px; }
+.skill-name { font-size:16px; font-weight:800; letter-spacing:-0.3px; }
+.skill-meta { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-left:auto; }
+.skill-badge { padding:3px 10px; border-radius:4px; font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; }
+.b-core { background:rgba(0,229,160,0.12); color:var(--accent); border:1px solid rgba(0,229,160,0.25); }
+.b-ml   { background:rgba(124,111,205,0.12); color:#a89ee8; border:1px solid rgba(124,111,205,0.25); }
+.b-ai   { background:rgba(245,158,11,0.12); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+.b-db   { background:rgba(59,130,246,0.12); color:#60a5fa; border:1px solid rgba(59,130,246,0.25); }
+.b-cloud{ background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+.b-tool { background:rgba(16,185,129,0.12); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+.chevron { margin-left:12px; transition:transform 0.3s; font-size:12px; color:var(--muted); }
+.skill-header.open .chevron { transform:rotate(180deg); }
+
+.skill-body { display:none; border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; background:var(--surface); padding:4px 0; }
+.skill-body.open { display:block; }
+
+.playlist-row {
+  display:grid; grid-template-columns: 40px 1fr auto auto auto;
+  align-items:center; gap:10px;
+  padding:12px 18px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:background 0.15s;
+}
+.playlist-row:last-child { border-bottom:none; }
+.playlist-row:hover { background:rgba(0,229,160,0.03); }
+.p-num { font-family:'Space Mono',monospace; font-size:11px; color:var(--dim); text-align:center; }
+.p-info { }
+.p-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.p-channel { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); }
+.p-desc { font-size:11px; color:var(--dim); margin-top:2px; line-height:1.5; }
+.p-dur { font-family:'Space Mono',monospace; font-size:10px; color:var(--warn); white-space:nowrap; }
+.p-level { font-family:'Space Mono',monospace; font-size:9px; padding:2px 7px; border-radius:3px; white-space:nowrap; }
+.lv-beg { background:rgba(0,229,160,0.1); color:var(--accent); }
+.lv-int { background:rgba(245,158,11,0.1); color:#fbbf24; }
+.lv-adv { background:rgba(239,68,68,0.1); color:#f87171; }
+.p-link a {
+  color:var(--accent); text-decoration:none; font-family:'Space Mono',monospace; font-size:10px;
+  border:1px solid rgba(0,229,160,0.3); padding:4px 10px; border-radius:4px;
+  transition:all 0.2s; white-space:nowrap;
+}
+.p-link a:hover { background:rgba(0,229,160,0.1); border-color:var(--accent); }
+
+/* Done checkbox */
+.done-check { cursor:pointer; font-size:16px; transition:transform 0.2s; }
+.done-check:hover { transform:scale(1.2); }
+
+/* Study plan */
+.roadmap {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:28px; margin: 32px 0 48px;
+}
+.roadmap h2 { font-size:16px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:20px; font-family:'Space Mono',monospace; }
+.weeks { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+.week-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.week-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; margin-bottom:8px; }
+.week-title { font-size:13px; font-weight:700; margin-bottom:8px; }
+.week-items { list-style:none; }
+.week-items li { font-size:11px; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.week-items li:last-child { border:none; }
+.week-items li::before { content:"→ "; color:var(--accent); }
+
+footer { border-top:1px solid var(--border); padding:20px 0; text-align:center; font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-top:20px; }
+footer span { color:var(--accent); }
+
+.hidden { display:none !important; }
+
+@media(max-width:640px) {
+  .playlist-row { grid-template-columns: 30px 1fr; }
+  .p-dur, .p-level, .p-link { display:none; }
+  .done-check { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">// Skill Upgrade Playlist — 2026</div>
+    <h1>Pilli Shreyas<br><em>Job-Ready Playlists</em></h1>
+    <p class="subtitle">All skills from resume · 100% Free · YouTube only · Data Analyst / AI-ML ready</p>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0 playlists watched</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="filterSkill('all',this)">All Skills</button>
+    <button class="tab" onclick="filterSkill('core',this)">🐍 Core Python</button>
+    <button class="tab" onclick="filterSkill('db',this)">🗄️ SQL / DB</button>
+    <button class="tab" onclick="filterSkill('ml',this)">🤖 ML / Scikit</button>
+    <button class="tab" onclick="filterSkill('dl',this)">🧠 TensorFlow / DL</button>
+    <button class="tab" onclick="filterSkill('ai',this)">✨ LangChain / GenAI</button>
+    <button class="tab" onclick="filterSkill('api',this)">⚡ FastAPI / Flask</button>
+    <button class="tab" onclick="filterSkill('cloud',this)">☁️ AWS / Cloud</button>
+    <button class="tab" onclick="filterSkill('stat',this)">📊 Stats / EDA</button>
+  </div>
+
+  <div id="skillList"></div>
+
+  <div class="roadmap">
+    <h2>// 8-Week Job-Ready Study Roadmap</h2>
+    <div class="weeks">
+      <div class="week-card">
+        <div class="week-label">WEEK 1–2</div>
+        <div class="week-title">Foundation Refresh</div>
+        <ul class="week-items">
+          <li>Python for Data Science (Corey Schafer)</li>
+          <li>Pandas & NumPy (Data School)</li>
+          <li>SQL Basics → Advanced (Alex the Analyst)</li>
+          <li>Build: EDA project on Kaggle dataset</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-label">WEEK 3–4</div>
+        <div class="week-title">ML Core Skills</div>
+        <ul class="week-items">
+          <li>Scikit-Learn full playlist (Data School)</li>
+          <li>StatQuest Statistics Fundamentals</li>
+          <li>ML with Python (Codebasics)</li>
+          <li>Build: Customer Churn model (your project)</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-label">WEEK 5–6</div>
+        <div class="week-title">Deep Learning + APIs</div>
+        <ul class="week-items">
+          <li>TensorFlow/Keras (Sentdex / freeCodeCamp)</li>
+          <li>FastAPI complete course (Tech With Tim)</li>
+          <li>Flask tutorials (Corey Schafer)</li>
+          <li>Build: ML model served as FastAPI endpoint</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-label">WEEK 7–8</div>
+        <div class="week-title">GenAI + Cloud Deploy</div>
+        <ul class="week-items">
+          <li>LangChain complete (Krish Naik)</li>
+          <li>RAG pipeline + Agents (Krish Naik)</li>
+          <li>AWS basics (freeCodeCamp / TechWorld Nana)</li>
+          <li>Build: Deploy VerifAI on AWS / Oracle Cloud</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Made for <span>Pilli Shreyas</span> · Job Hunt 2026 · All playlists 100% free on YouTube · Click ○ to mark watched</footer>
+
+<script>
+const skills = [
+  {
+    id: "core", icon: "🐍", name: "Python for Data Science", badge: "b-core", badgeText: "CORE",
+    playlists: [
+      { title: "Python Tutorials – Data Science & Web Dev", channel: "Corey Schafer", desc: "Gold standard Python tutorials — OOP, Pandas, Matplotlib, Generators. Clear, structured, real examples.", dur: "~20 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PL-osiE80TeTt2d9bfVyTiXJA-UTHn6WwU" },
+      { title: "Python for Beginners – Full Course", channel: "freeCodeCamp", desc: "4.5-hour comprehensive Python beginner course. Best single video to refresh fundamentals fast.", dur: "4.5 hrs", level: "beg", link: "https://www.youtube.com/watch?v=rfscVS0vtbw" },
+      { title: "Data Analysis with Python & Pandas", channel: "Data School (Kevin Markham)", desc: "Best pandas playlist on YouTube. Practical real-world data manipulation, cleaning, merging.", dur: "~8 hrs", level: "int", link: "https://www.youtube.com/playlist?list=PL5-da3qGB5ICCsgW1MxlZ0Hq8LL5U3u9y" },
+      { title: "Python Data Science Full Course", channel: "Codebasics (Dhaval Patel)", desc: "108-video Indian educator playlist. Covers Python + ML + Stats. Highly recommended for Indian fresher context.", dur: "~30 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLeo1K3hjS3us_ELKYSj_Fth2tIEkdKXvV" },
+    ]
+  },
+  {
+    id: "db", icon: "🗄️", name: "SQL, MySQL & PostgreSQL", badge: "b-db", badgeText: "DATABASE",
+    playlists: [
+      { title: "Data Analyst Bootcamp – SQL Complete", channel: "Alex the Analyst", desc: "The #1 DA bootcamp. Covers SQL basics → intermediate → advanced → portfolio projects in one 20-hr playlist. Free certificate.", dur: "~20 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZ87vPPSfHqb6OcM0cF" },
+      { title: "SQL Tutorial – Full Database Course", channel: "freeCodeCamp", desc: "4-hour complete relational DB + SQL fundamentals. MySQL focused. Great for interview prep.", dur: "4 hrs", level: "beg", link: "https://www.youtube.com/watch?v=HXV3zeQKqGY" },
+      { title: "Advanced SQL Tutorials (CTEs, Temp Tables, Stored Procs)", channel: "Alex the Analyst", desc: "Short focused videos on advanced SQL concepts tested in DA interviews.", dur: "~2 hrs", level: "adv", link: "https://www.youtube.com/playlist?list=PLUaB-1hjhk8EBZNL4nx4Otoa5guqkep_n" },
+      { title: "MySQL Tutorial for Beginners", channel: "Programming with Mosh", desc: "Professional quality 3-hr MySQL complete tutorial. Covers all fundamentals + joins + stored procedures.", dur: "3 hrs", level: "beg", link: "https://www.youtube.com/watch?v=7S_tz1z_5bA" },
+    ]
+  },
+  {
+    id: "ml", icon: "🤖", name: "Scikit-Learn & Machine Learning", badge: "b-ml", badgeText: "ML",
+    playlists: [
+      { title: "Scikit-Learn Tutorial – ML in Python", channel: "Data School (Kevin Markham)", desc: "Best scikit-learn playlist. Covers entire ML workflow: preprocessing, modeling, evaluation, pipelines.", dur: "~10 hrs", level: "int", link: "https://www.youtube.com/playlist?list=PL5-da3qGB5ICeMbQuqys6Us_2i-QbHOgA" },
+      { title: "Machine Learning with Python – Complete Course", channel: "Codebasics", desc: "End-to-end ML course with Indian-context examples. Linear/logistic regression, trees, SVM, clustering.", dur: "~25 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLeo1K3hjS3uvCeTYTeyfe0-rN5r8zn9rw" },
+      { title: "StatQuest: Machine Learning Fundamentals", channel: "StatQuest (Josh Starmer)", desc: "ESSENTIAL. Explains WHY algorithms work — decision trees, random forests, SVM, PCA, bias-variance. Highly visual.", dur: "~15 hrs", level: "int", link: "https://www.youtube.com/playlist?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF" },
+      { title: "ML Full Course – freeCodeCamp", channel: "freeCodeCamp", desc: "Multiple full-length ML courses covering linear regression to neural nets with Python.", dur: "~12 hrs", level: "beg", link: "https://www.youtube.com/watch?v=NWONeJKn6kc" },
+    ]
+  },
+  {
+    id: "dl", icon: "🧠", name: "TensorFlow & Deep Learning", badge: "b-ml", badgeText: "DEEP LEARNING",
+    playlists: [
+      { title: "TensorFlow 2.0 Complete Course", channel: "freeCodeCamp / Tim Ruscica", desc: "7-hour complete TensorFlow 2.0 course. Neural nets, CNNs, RNNs, NLP. Project-based.", dur: "7 hrs", level: "int", link: "https://www.youtube.com/watch?v=tPYj3fFJGjk" },
+      { title: "Deep Learning with Python (Keras + TF)", channel: "Sentdex (Harrison Kinsley)", desc: "Hands-on deep learning. Builds models step by step. Great for practical understanding of TF/Keras.", dur: "~12 hrs", level: "int", link: "https://www.youtube.com/playlist?list=PLQVvvaa0QuDfhTox0AjmQ6tvTgMBZBEXN" },
+      { title: "Neural Networks – 3Blue1Brown", channel: "3Blue1Brown (Grant Sanderson)", desc: "WATCH THIS FIRST. Beautiful visual explanation of how neural networks and backprop actually work. 4 videos.", dur: "1 hr", level: "beg", link: "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" },
+      { title: "Krish Naik – Complete Deep Learning Playlist", channel: "Krish Naik", desc: "Comprehensive DL series from Indian ML educator. ANN, CNN, RNN, LSTM, Transfer Learning.", dur: "~20 hrs", level: "int", link: "https://www.youtube.com/playlist?list=PLZoTAELRMXVPGU70ZGsckrMdr0FteeRUi" },
+    ]
+  },
+  {
+    id: "ai", icon: "✨", name: "LangChain & Generative AI", badge: "b-ai", badgeText: "GENAI",
+    playlists: [
+      { title: "Complete LangChain Course for Generative AI", channel: "Krish Naik", desc: "3-hr complete LangChain course. Chatbots, RAG pipelines, API deployment, Groq + HuggingFace integration.", dur: "3 hrs", level: "int", link: "https://www.youtube.com/watch?v=swCPic00c30" },
+      { title: "LangChain v1 Crash Course – Build Autonomous Agents", channel: "Krish Naik", desc: "Latest LangChain v1. Agents, tools, structured output, Pydantic, streaming, human-in-the-loop.", dur: "2 hrs", level: "int", link: "https://www.youtube.com/watch?v=wCpkRLFWuQk" },
+      { title: "Complete RAG Crash Course with LangChain", channel: "Krish Naik", desc: "2-hour RAG systems from scratch. FAISS, vector DBs, retrieval augmented generation. Directly relevant to VerifAI.", dur: "2 hrs", level: "int", link: "https://www.youtube.com/watch?v=sVcwVQRHIc8" },
+      { title: "Generative AI Full Course 2025", channel: "freeCodeCamp / various", desc: "Complete GenAI landscape: LLMs, prompt engineering, fine-tuning, agents, RAG, deployment.", dur: "~10 hrs", level: "int", link: "https://www.youtube.com/watch?v=mEsleV16qdo" },
+      { title: "How Large Language Models Work", channel: "Andrej Karpathy", desc: "1-hr brilliant video by ex-OpenAI/Tesla AI head. Deep intuition on LLMs. Watch before any interview.", dur: "1 hr", level: "adv", link: "https://www.youtube.com/watch?v=zjkBMFhNj_g" },
+    ]
+  },
+  {
+    id: "api", icon: "⚡", name: "FastAPI & Flask", badge: "b-tool", badgeText: "BACKEND",
+    playlists: [
+      { title: "FastAPI Tutorial – Complete Beginners Course", channel: "Tech With Tim", desc: "Beginner FastAPI course. CRUD, Pydantic, path params, request bodies. Clean and practical.", dur: "~3 hrs", level: "beg", link: "https://www.youtube.com/watch?v=CBASjF0dYPU" },
+      { title: "FastAPI – Full Course (Endpoints to Deployment)", channel: "Amigoscode", desc: "REST APIs with FastAPI, SQLAlchemy, PostgreSQL, deployment. Production-ready patterns.", dur: "~5 hrs", level: "int", link: "https://www.youtube.com/watch?v=0sOvCWFmrtA" },
+      { title: "Flask Tutorial Series", channel: "Corey Schafer", desc: "Best Flask series on YouTube. 15 videos covering routes, templates, DB, login, deployment.", dur: "~8 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PL-osiE80TeTs4UjLw5MM6OjgkjFeUxCYH" },
+      { title: "REST API with Python & Flask", channel: "freeCodeCamp", desc: "Build a complete REST API with Flask, authentication, and database from scratch.", dur: "~2 hrs", level: "beg", link: "https://www.youtube.com/watch?v=GMppyAPbLYk" },
+    ]
+  },
+  {
+    id: "cloud", icon: "☁️", name: "AWS & Cloud Computing", badge: "b-cloud", badgeText: "CLOUD",
+    playlists: [
+      { title: "AWS Tutorial for Beginners – Full 9hr Course", channel: "freeCodeCamp", desc: "Comprehensive AWS beginner course on freeCodeCamp. EC2, S3, Lambda, networking, security, billing.", dur: "9 hrs", level: "beg", link: "https://www.youtube.com/watch?v=ulprqHHWlng" },
+      { title: "AWS Fundamentals – Core Services", channel: "TechWorld with Nana", desc: "2.5-hr straight-to-the-point AWS course. IAM, EC2, S3, CloudFormation. Real-world practical focus.", dur: "2.5 hrs", level: "beg", link: "https://www.youtube.com/watch?v=ZB5ONbD_SMY" },
+      { title: "AWS 107-Hour Cloud Project Bootcamp", channel: "freeCodeCamp / Andrew Brown", desc: "Full project bootcamp on freeCodeCamp YouTube. Design, build, deploy real AWS cloud project end-to-end.", dur: "107 hrs", level: "adv", link: "https://www.youtube.com/watch?v=zA8guDqfv40" },
+      { title: "Docker Tutorial for Beginners", channel: "TechWorld with Nana", desc: "Essential for cloud deployment. Docker concepts + hands-on. Pairs with FastAPI + AWS deployment.", dur: "3 hrs", level: "beg", link: "https://www.youtube.com/watch?v=3c-iBn73dDE" },
+    ]
+  },
+  {
+    id: "stat", icon: "📊", name: "Statistics, EDA & Data Visualization", badge: "b-core", badgeText: "ANALYTICS",
+    playlists: [
+      { title: "Statistics Fundamentals", channel: "StatQuest (Josh Starmer)", desc: "THE best stats playlist. Probability, distributions, hypothesis testing, p-values, correlation. Visual + clear.", dur: "~10 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLblh5JKOoLUK0FLuzwntyYI10UQFUhsY9" },
+      { title: "Pandas Data Analysis – Visualization with Seaborn & Matplotlib", channel: "Corey Schafer", desc: "Matplotlib + Seaborn complete tutorials for data visualization. Directly for EDA projects.", dur: "~5 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PL-osiE80TeTvipOqomVEviRg7LUgV14B7" },
+      { title: "Exploratory Data Analysis – Complete Python EDA", channel: "Krish Naik", desc: "Full EDA workflow in Python: missing values, outliers, feature engineering, visualization, correlation.", dur: "~6 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLZoTAELRMXVPzj1D0i_6ajJ6gyD22b3jh" },
+      { title: "Data Analyst Bootcamp – Tableau + Power BI", channel: "Alex the Analyst", desc: "Visualization tools: Tableau and Power BI from scratch. Essential for DA roles needing BI dashboards.", dur: "~8 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZ87vPPSfHqb6OcM0cF" },
+    ]
+  },
+];
+
+let doneSet = new Set(JSON.parse(localStorage.getItem('sunny_done') || '[]'));
+
+function saveDone() {
+  try { localStorage.setItem('sunny_done', JSON.stringify([...doneSet])); } catch(e) {}
+}
+
+function updateProgress() {
+  const total = skills.reduce((s,sk) => s + sk.playlists.length, 0);
+  const done = doneSet.size;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${done} / ${total} playlists watched · ${pct}% job-ready`;
+}
+
+function renderSkills(filter) {
+  const container = document.getElementById('skillList');
+  container.innerHTML = '';
+  skills.forEach((sk, si) => {
+    if (filter !== 'all' && sk.id !== filter) return;
+    const section = document.createElement('div');
+    section.className = 'skill-section';
+    section.dataset.id = sk.id;
+
+    const header = document.createElement('div');
+    header.className = 'skill-header';
+    header.innerHTML = `
+      <span class="skill-icon">${sk.icon}</span>
+      <span class="skill-name">${sk.name}</span>
+      <span class="skill-badge ${sk.badge}">${sk.badgeText}</span>
+      <span class="skill-meta">${sk.playlists.length} playlists</span>
+      <span class="chevron">▼</span>
+    `;
+    header.onclick = () => {
+      header.classList.toggle('open');
+      body.classList.toggle('open');
+    };
+
+    const body = document.createElement('div');
+    body.className = 'skill-body';
+
+    sk.playlists.forEach((p, pi) => {
+      const key = `${si}-${pi}`;
+      const isDone = doneSet.has(key);
+      const row = document.createElement('div');
+      row.className = 'playlist-row';
+      const lvClass = p.level === 'beg' ? 'lv-beg' : p.level === 'int' ? 'lv-int' : 'lv-adv';
+      const lvLabel = p.level === 'beg' ? 'BEGINNER' : p.level === 'int' ? 'INTERMEDIATE' : 'ADVANCED';
+      row.innerHTML = `
+        <span class="p-num">${pi+1}</span>
+        <div class="p-info">
+          <div class="p-title" style="${isDone?'text-decoration:line-through;opacity:0.5':''}">${p.title}</div>
+          <div class="p-channel">📺 ${p.channel}</div>
+          <div class="p-desc">${p.desc}</div>
+        </div>
+        <span class="p-dur">${p.dur}</span>
+        <span class="p-level ${lvClass}">${lvLabel}</span>
+        <span class="p-link"><a href="${p.link}" target="_blank">▶ Watch</a></span>
+        <span class="done-check" title="Mark as watched" onclick="toggleDone('${key}', this)">${isDone ? '✅' : '⭕'}</span>
+      `;
+      body.appendChild(row);
+    });
+
+    section.appendChild(header);
+    section.appendChild(body);
+    container.appendChild(section);
+  });
+  updateProgress();
+}
+
+function toggleDone(key, el) {
+  if (doneSet.has(key)) { doneSet.delete(key); el.textContent = '⭕'; }
+  else { doneSet.add(key); el.textContent = '✅'; }
+  const title = el.closest('.playlist-row').querySelector('.p-title');
+  if (doneSet.has(key)) { title.style.textDecoration='line-through'; title.style.opacity='0.5'; }
+  else { title.style.textDecoration=''; title.style.opacity=''; }
+  saveDone();
+  updateProgress();
+}
+
+function filterSkill(id, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSkills(id);
+}
+
+renderSkills('all');
+</script>
+</body>
+</html>
