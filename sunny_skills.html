@@ -4,153 +4,361 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sunny's Skill Playlists — Job Ready 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080810;
-  --surface: #0f0f1a;
-  --card: #12121f;
-  --border: #1c1c2e;
-  --accent: #00e5a0;
-  --accent2: #7c6fcd;
-  --warn: #f59e0b;
-  --red: #ef4444;
-  --blue: #3b82f6;
-  --text: #e2e8f0;
-  --muted: #64748b;
-  --dim: #334155;
+  --bg: #ffffff;
+  --surface: #f9f9f9;
+  --card: #ffffff;
+  --border: #e0e0e0;
+  --border-strong: #111111;
+  --text: #111111;
+  --muted: #777777;
+  --dim: #aaaaaa;
+  --ink: #000000;
+  --paper: #ffffff;
+  --invert-bg: #111111;
+  --invert-text: #ffffff;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
+
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Syne', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
+
+/* Ruled lines background — editorial newspaper feel */
 body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0,229,160,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,160,0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
+  content:'';
+  position:fixed; inset:0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent,
+    transparent 47px,
+    rgba(0,0,0,0.04) 47px,
+    rgba(0,0,0,0.04) 48px
+  );
+  pointer-events:none; z-index:0;
 }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
 
-/* Header */
-header { padding: 48px 0 24px; }
-.eyebrow { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
-h1 { font-size: clamp(26px,4.5vw,46px); font-weight:800; line-height:1.1; letter-spacing:-1px; }
-h1 em { color:var(--accent); font-style:normal; }
-.subtitle { color:var(--muted); font-size:13px; margin-top:10px; font-family:'Space Mono',monospace; }
+.container { max-width:1100px; margin:0 auto; padding:0 28px; position:relative; z-index:1; }
 
-/* Progress bar */
-.progress-bar { background:var(--border); border-radius:4px; height:6px; margin-top:20px; overflow:hidden; max-width:500px; }
-.progress-fill { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:4px; transition:width 0.6s; }
-.progress-label { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); margin-top:6px; }
+/* ── HEADER ── */
+header {
+  padding: 56px 0 0;
+  border-bottom: 3px solid var(--ink);
+  margin-bottom: 0;
+}
+.masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5.5vw, 72px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  color: var(--ink);
+}
+h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink);
+  border-bottom: 4px solid var(--ink);
+  padding-bottom: 2px;
+}
+.header-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.issue-info {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  line-height: 1.8;
+  text-transform: uppercase;
+}
+.subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 10px 0 14px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
 
-/* Skill filter tabs */
-.tabs { display:flex; gap:8px; flex-wrap:wrap; margin:28px 0 20px; }
-.tab { background:var(--card); border:1px solid var(--border); color:var(--muted); font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:7px 14px; border-radius:6px; cursor:pointer; transition:all 0.2s; }
-.tab:hover, .tab.active { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,0.06); }
+/* Progress bar — editorial ticker */
+.progress-wrap { padding: 12px 0; display:flex; align-items:center; gap:16px; }
+.progress-bar { flex:1; max-width:400px; background:#e8e8e8; height:3px; overflow:hidden; }
+.progress-fill { height:100%; background:var(--ink); transition:width 0.6s cubic-bezier(.4,0,.2,1); }
+.progress-label { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); white-space:nowrap; }
 
-/* Skill sections */
-.skill-section { margin-bottom: 28px; }
+/* ── TABS ── */
+.tabs {
+  display:flex; gap:0; flex-wrap:wrap;
+  margin: 24px 0 20px;
+  border: 1px solid var(--border-strong);
+}
+.tab {
+  background: var(--paper);
+  border: none;
+  border-right: 1px solid var(--border-strong);
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.tab:last-child { border-right: none; }
+.tab:hover { background: #f0f0f0; color: var(--ink); }
+.tab.active { background: var(--ink); color: var(--paper); }
+
+/* ── SKILL SECTIONS ── */
+.skill-section { margin-bottom: 0; border-bottom: 2px solid var(--ink); }
+
 .skill-header {
   display:flex; align-items:center; gap:14px;
-  padding:14px 18px;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:10px 10px 0 0;
-  cursor:pointer;
-  transition:border-color 0.2s;
+  padding: 16px 20px;
+  background: var(--paper);
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
 }
-.skill-header:hover { border-color:var(--accent); }
-.skill-icon { font-size:22px; }
-.skill-name { font-size:16px; font-weight:800; letter-spacing:-0.3px; }
-.skill-meta { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-left:auto; }
-.skill-badge { padding:3px 10px; border-radius:4px; font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; }
-.b-core { background:rgba(0,229,160,0.12); color:var(--accent); border:1px solid rgba(0,229,160,0.25); }
-.b-ml   { background:rgba(124,111,205,0.12); color:#a89ee8; border:1px solid rgba(124,111,205,0.25); }
-.b-ai   { background:rgba(245,158,11,0.12); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
-.b-db   { background:rgba(59,130,246,0.12); color:#60a5fa; border:1px solid rgba(59,130,246,0.25); }
-.b-cloud{ background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
-.b-tool { background:rgba(16,185,129,0.12); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
-.chevron { margin-left:12px; transition:transform 0.3s; font-size:12px; color:var(--muted); }
-.skill-header.open .chevron { transform:rotate(180deg); }
+.skill-header:hover { background: #f5f5f5; }
+.skill-header.open { background: var(--ink); color: var(--paper); }
+.skill-header.open .skill-name { color: var(--paper); }
+.skill-header.open .skill-meta { color: rgba(255,255,255,0.5); }
+.skill-header.open .chevron { color: rgba(255,255,255,0.6); }
 
-.skill-body { display:none; border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; background:var(--surface); padding:4px 0; }
+.skill-icon { font-size: 18px; line-height:1; }
+.skill-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+}
+.skill-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; color: var(--muted);
+  margin-left: auto; text-transform: uppercase; letter-spacing: 1px;
+}
+.skill-badge {
+  padding: 3px 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+/* All badges — black & white only */
+.b-core,.b-ml,.b-ai,.b-db,.b-cloud,.b-tool,.b-cert { color: var(--ink); border-color: var(--ink); }
+.skill-header.open .b-core,
+.skill-header.open .b-ml,
+.skill-header.open .b-ai,
+.skill-header.open .b-db,
+.skill-header.open .b-cloud,
+.skill-header.open .b-tool,
+.skill-header.open .b-cert { color: var(--paper); border-color: rgba(255,255,255,0.5); }
+
+.chevron { margin-left: 10px; transition: transform 0.3s; font-size: 11px; color: var(--muted); }
+.skill-header.open .chevron { transform: rotate(180deg); }
+
+.skill-body { display:none; background: var(--surface); }
 .skill-body.open { display:block; }
 
+/* ── PLAYLIST ROWS ── */
 .playlist-row {
-  display:grid; grid-template-columns: 40px 1fr auto auto auto;
-  align-items:center; gap:10px;
-  padding:12px 18px;
-  border-bottom:1px solid rgba(255,255,255,0.04);
-  transition:background 0.15s;
+  display: grid;
+  grid-template-columns: 36px 1fr 70px 80px 90px 32px;
+  align-items: center; gap: 12px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
 }
-.playlist-row:last-child { border-bottom:none; }
-.playlist-row:hover { background:rgba(0,229,160,0.03); }
-.p-num { font-family:'Space Mono',monospace; font-size:11px; color:var(--dim); text-align:center; }
-.p-info { }
-.p-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px; }
-.p-channel { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); }
-.p-desc { font-size:11px; color:var(--dim); margin-top:2px; line-height:1.5; }
-.p-dur { font-family:'Space Mono',monospace; font-size:10px; color:var(--warn); white-space:nowrap; }
-.p-level { font-family:'Space Mono',monospace; font-size:9px; padding:2px 7px; border-radius:3px; white-space:nowrap; }
-.lv-beg { background:rgba(0,229,160,0.1); color:var(--accent); }
-.lv-int { background:rgba(245,158,11,0.1); color:#fbbf24; }
-.lv-adv { background:rgba(239,68,68,0.1); color:#f87171; }
+.playlist-row:last-child { border-bottom: none; }
+.playlist-row:hover { background: #f0f0f0; }
+
+.p-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: var(--dim);
+  text-align: center; font-weight: 700;
+}
+.p-title {
+  font-size: 13px; font-weight: 500;
+  color: var(--ink); margin-bottom: 2px;
+  font-family: 'DM Sans', sans-serif;
+}
+.p-channel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; color: var(--muted);
+}
+.p-desc {
+  font-size: 11px; color: var(--dim);
+  margin-top: 3px; line-height: 1.5;
+}
+.p-dur {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: var(--ink);
+  font-weight: 700; white-space: nowrap;
+  text-align: right;
+}
+.p-level {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; padding: 3px 7px;
+  border: 1px solid currentColor;
+  white-space: nowrap; text-align: center;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+/* All levels — monochrome */
+.lv-beg { color: var(--ink); border-color: var(--ink); }
+.lv-int { color: var(--muted); border-color: var(--muted); }
+.lv-adv { color: var(--ink); border-color: var(--ink); background: var(--ink); color: var(--paper); }
+
 .p-link a {
-  color:var(--accent); text-decoration:none; font-family:'Space Mono',monospace; font-size:10px;
-  border:1px solid rgba(0,229,160,0.3); padding:4px 10px; border-radius:4px;
-  transition:all 0.2s; white-space:nowrap;
+  color: var(--ink); text-decoration: none;
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  border: 1px solid var(--ink); padding: 5px 10px;
+  display: block; text-align: center; white-space: nowrap;
+  transition: all 0.15s; letter-spacing: 0.5px;
+  background: var(--paper);
 }
-.p-link a:hover { background:rgba(0,229,160,0.1); border-color:var(--accent); }
+.p-link a:hover { background: var(--ink); color: var(--paper); }
+
+/* Provider badge for certs */
+.p-provider {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; padding: 1px 6px;
+  border: 1px solid var(--ink);
+  margin-right: 6px; vertical-align: middle;
+  text-transform: uppercase; letter-spacing: 1px;
+  background: var(--ink); color: var(--paper);
+}
+.prov-nvidia { background: var(--paper); color: var(--ink); }
 
 /* Done checkbox */
-.done-check { cursor:pointer; font-size:16px; transition:transform 0.2s; }
-.done-check:hover { transform:scale(1.2); }
-
-/* Study plan */
-.roadmap {
-  background:var(--card); border:1px solid var(--border); border-radius:12px;
-  padding:28px; margin: 32px 0 48px;
+.done-check {
+  cursor: pointer; font-size: 15px;
+  transition: transform 0.15s;
+  text-align: center;
 }
-.roadmap h2 { font-size:16px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:20px; font-family:'Space Mono',monospace; }
-.weeks { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
-.week-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
-.week-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; margin-bottom:8px; }
-.week-title { font-size:13px; font-weight:700; margin-bottom:8px; }
-.week-items { list-style:none; }
-.week-items li { font-size:11px; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-.week-items li:last-child { border:none; }
-.week-items li::before { content:"→ "; color:var(--accent); }
+.done-check:hover { transform: scale(1.25); }
 
-footer { border-top:1px solid var(--border); padding:20px 0; text-align:center; font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-top:20px; }
-footer span { color:var(--accent); }
+/* ── ROADMAP ── */
+.roadmap {
+  border: 2px solid var(--ink);
+  padding: 28px; margin: 32px 0 48px;
+}
+.roadmap h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 900;
+  letter-spacing: -0.5px; color: var(--ink);
+  margin-bottom: 20px; font-style: italic;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+}
+.weeks { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0; }
+.week-card {
+  padding: 16px 20px;
+  border-right: 1px solid var(--border);
+}
+.week-card:last-child { border-right: none; }
+.week-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; color: var(--muted);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.week-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 10px; color: var(--ink);
+}
+.week-items { list-style: none; }
+.week-items li {
+  font-size: 11px; color: var(--muted);
+  padding: 4px 0;
+  border-bottom: 1px solid #ebebeb;
+  font-family: 'DM Sans', sans-serif;
+}
+.week-items li:last-child { border: none; }
+.week-items li::before { content: "— "; color: var(--ink); font-weight: 700; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 3px solid var(--ink);
+  padding: 16px 0;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; color: var(--muted);
+  margin-top: 20px; letter-spacing: 1px;
+  text-transform: uppercase;
+}
+footer span { color: var(--ink); font-weight: 700; }
 
 .hidden { display:none !important; }
 
-@media(max-width:640px) {
-  .playlist-row { grid-template-columns: 30px 1fr; }
-  .p-dur, .p-level, .p-link { display:none; }
-  .done-check { display:none; }
+/* Page-load reveal */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+header { animation: fadeUp 0.5s ease both; }
+.tabs  { animation: fadeUp 0.5s 0.1s ease both; }
+#skillList { animation: fadeUp 0.5s 0.15s ease both; }
+
+@media(max-width:700px) {
+  .playlist-row { grid-template-columns: 28px 1fr 28px; }
+  .p-dur,.p-level,.p-link { display:none; }
+  .masthead { flex-direction:column; align-items:flex-start; }
+  .header-right { text-align:left; }
+  .weeks { grid-template-columns: 1fr; }
+  .week-card { border-right:none; border-bottom: 1px solid var(--border); }
 }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <div class="eyebrow">// Skill Upgrade Playlist — 2026</div>
-    <h1>Pilli Shreyas<br><em>Job-Ready Playlists</em></h1>
-    <p class="subtitle">All skills from resume · 100% Free · YouTube only · Data Analyst / AI-ML ready</p>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="progress-label" id="progressLabel">0 / 0 playlists watched</div>
+    <div class="eyebrow">// Skill Upgrade Index — 2026</div>
+    <div class="masthead">
+      <div>
+        <h1>Pilli Shreyas<br><em>Job-Ready Playlists</em></h1>
+      </div>
+      <div class="header-right">
+        <div class="issue-info">
+          Vol. 01 · Issue 2026<br>
+          Data Analyst / AI-ML<br>
+          Hyderabad, India
+        </div>
+      </div>
+    </div>
+    <p class="subtitle">All skills from resume · 100% Free · YouTube + Anthropic Academy + NVIDIA DLI · Data Analyst / AI-ML ready</p>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">0 / 0 playlists watched</div>
+    </div>
   </header>
 
   <div class="tabs">
@@ -163,6 +371,7 @@ footer span { color:var(--accent); }
     <button class="tab" onclick="filterSkill('api',this)">⚡ FastAPI / Flask</button>
     <button class="tab" onclick="filterSkill('cloud',this)">☁️ AWS / Cloud</button>
     <button class="tab" onclick="filterSkill('stat',this)">📊 Stats / EDA</button>
+    <button class="tab" onclick="filterSkill('cert',this)">🎓 Certifications</button>
   </div>
 
   <div id="skillList"></div>
@@ -210,11 +419,21 @@ footer span { color:var(--accent); }
           <li>Build: Deploy VerifAI on AWS / Oracle Cloud</li>
         </ul>
       </div>
+      <div class="week-card">
+        <div class="week-label">PARALLEL</div>
+        <div class="week-title">Free Certifications</div>
+        <ul class="week-items">
+          <li>Anthropic Academy: Claude API (8 hrs)</li>
+          <li>Anthropic Academy: MCP Intro + Advanced</li>
+          <li>NVIDIA DLI: RAG Agents with LLMs (8 hrs)</li>
+          <li>NVIDIA DLI: Deep Learning Fundamentals</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
 
-<footer>Made for <span>Pilli Shreyas</span> · Job Hunt 2026 · All playlists 100% free on YouTube · Click ○ to mark watched</footer>
+<footer>Made for <span>Pilli Shreyas</span> · Job Hunt 2026 · YouTube + Anthropic Academy + NVIDIA DLI · All 100% Free · Click ○ to mark watched</footer>
 
 <script>
 const skills = [
@@ -291,6 +510,24 @@ const skills = [
       { title: "Data Analyst Bootcamp – Tableau + Power BI", channel: "Alex the Analyst", desc: "Visualization tools: Tableau and Power BI from scratch. Essential for DA roles needing BI dashboards.", dur: "~8 hrs", level: "beg", link: "https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZ87vPPSfHqb6OcM0cF" },
     ]
   },
+  {
+    id: "cert", icon: "🎓", name: "Free Certifications (Anthropic + NVIDIA)", badge: "b-cert", badgeText: "CERTS",
+    playlists: [
+      { title: "Claude 101", channel: "Anthropic Academy", desc: "Phase 1 · Basics, core features, everyday workflows. Quick start — complete first.", dur: "~0.5 hr", level: "beg", link: "https://anthropic.skilljar.com/claude-101" },
+      { title: "AI Fluency: Framework & Foundations", channel: "Anthropic Academy", desc: "Phase 1 · 4D AI framework, responsible AI, collaboration. Strong resume base for any AI/ML role.", dur: "~1 hr", level: "beg", link: "https://anthropic.skilljar.com/ai-fluency" },
+      { title: "Building with the Claude API", channel: "Anthropic Academy", desc: "Phase 2 · ⭐ MOST IMPORTANT. System prompts, tool use, RAG, production patterns. 8+ hrs hands-on.", dur: "8+ hrs", level: "int", link: "https://anthropic.skilljar.com/generative-ai-api-development" },
+      { title: "Claude Code in Action", channel: "Anthropic Academy", desc: "Phase 2 · Context handling, tool chaining, MCP in Claude Code. Trending skill in 2026.", dur: "~2 hrs", level: "int", link: "https://anthropic.skilljar.com/claude-code-in-action" },
+      { title: "Introduction to Model Context Protocol (MCP)", channel: "Anthropic Academy", desc: "Phase 3 · MCP servers, clients, tools, resources. Do before Advanced MCP.", dur: "~2 hrs", level: "int", link: "https://anthropic.skilljar.com/introduction-to-mcp" },
+      { title: "Advanced Model Context Protocol (MCP)", channel: "Anthropic Academy", desc: "Phase 3 · Sampling, file access, production deployment. Rare skill — few freshers have it.", dur: "~2 hrs", level: "adv", link: "https://anthropic.skilljar.com/advanced-mcp" },
+      { title: "Introduction to Agent Skills", channel: "Anthropic Academy", desc: "Phase 3 · Autonomous agents, tool use, decision loops. Cutting-edge AI territory.", dur: "~2 hrs", level: "adv", link: "https://anthropic.skilljar.com/introduction-to-agent-skills" },
+      { title: "Claude on AWS Bedrock", channel: "Anthropic Academy", desc: "Phase 4 · Enterprise deployment on AWS. Useful for cloud-heavy roles.", dur: "~1 hr", level: "int", link: "https://anthropic.skilljar.com/claude-on-aws-bedrock" },
+      { title: "Claude on Google Vertex AI", channel: "Anthropic Academy", desc: "Phase 4 · GCP integration patterns. Pairs well with your AWS knowledge.", dur: "~1 hr", level: "int", link: "https://anthropic.skilljar.com/claude-on-google-vertex-ai" },
+      { title: "Generative AI Explained", channel: "NVIDIA DLI", desc: "NVIDIA · Quick conceptual cert. GenAI landscape, LLMs, diffusion models.", dur: "~1 hr", level: "beg", link: "https://courses.nvidia.com/courses/course-v1:DLI+S-FX-07+V1" },
+      { title: "Getting Started with Deep Learning", channel: "NVIDIA DLI", desc: "NVIDIA · Neural nets, CNNs, data augmentation using TensorFlow/Keras. GPU labs on NVIDIA cloud.", dur: "~8 hrs", level: "int", link: "https://courses.nvidia.com/courses/course-v1:DLI+C-FX-01+V1" },
+      { title: "Building RAG Agents with LLMs", channel: "NVIDIA DLI", desc: "NVIDIA · ⭐ MUST DO. RAG from prototype to production. Directly complements your VerifAI/FAISS work.", dur: "~8 hrs", level: "adv", link: "https://courses.nvidia.com/courses/course-v1:DLI+S-FX-15+V1" },
+      { title: "Fundamentals of Accelerated Computing with CUDA Python", channel: "NVIDIA DLI", desc: "NVIDIA · Accelerate Python using CUDA + Numba. Rare skill that stands out on a data science resume.", dur: "~3 hrs", level: "adv", link: "https://courses.nvidia.com/courses/course-v1:DLI+C-AC-02+V1" },
+    ]
+  },
 ];
 
 let doneSet = new Set(JSON.parse(localStorage.getItem('sunny_done') || '[]'));
@@ -304,7 +541,7 @@ function updateProgress() {
   const done = doneSet.size;
   const pct = total ? Math.round(done/total*100) : 0;
   document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressLabel').textContent = `${done} / ${total} playlists watched · ${pct}% job-ready`;
+  document.getElementById('progressLabel').textContent = `${done} / ${total} completed · ${pct}% job-ready`;
 }
 
 function renderSkills(filter) {
@@ -322,7 +559,7 @@ function renderSkills(filter) {
       <span class="skill-icon">${sk.icon}</span>
       <span class="skill-name">${sk.name}</span>
       <span class="skill-badge ${sk.badge}">${sk.badgeText}</span>
-      <span class="skill-meta">${sk.playlists.length} playlists</span>
+      <span class="skill-meta">${sk.playlists.length} items</span>
       <span class="chevron">▼</span>
     `;
     header.onclick = () => {
@@ -339,18 +576,22 @@ function renderSkills(filter) {
       const row = document.createElement('div');
       row.className = 'playlist-row';
       const lvClass = p.level === 'beg' ? 'lv-beg' : p.level === 'int' ? 'lv-int' : 'lv-adv';
-      const lvLabel = p.level === 'beg' ? 'BEGINNER' : p.level === 'int' ? 'INTERMEDIATE' : 'ADVANCED';
+      const lvLabel = p.level === 'beg' ? 'BEG' : p.level === 'int' ? 'INT' : 'ADV';
+      const provBadge = sk.id === 'cert'
+        ? `<span class="p-provider ${p.channel.includes('NVIDIA') ? 'prov-nvidia' : ''}">${p.channel.includes('NVIDIA') ? 'NVIDIA' : 'ANTHROPIC'}</span>`
+        : '';
+      const watchLabel = sk.id === 'cert' ? '→ Enroll' : '▶ Watch';
       row.innerHTML = `
         <span class="p-num">${pi+1}</span>
         <div class="p-info">
-          <div class="p-title" style="${isDone?'text-decoration:line-through;opacity:0.5':''}">${p.title}</div>
-          <div class="p-channel">📺 ${p.channel}</div>
+          <div class="p-title" style="${isDone?'text-decoration:line-through;opacity:0.4':''}">${provBadge}${p.title}</div>
+          <div class="p-channel">${sk.id === 'cert' ? '🎓' : '📺'} ${p.channel}</div>
           <div class="p-desc">${p.desc}</div>
         </div>
         <span class="p-dur">${p.dur}</span>
         <span class="p-level ${lvClass}">${lvLabel}</span>
-        <span class="p-link"><a href="${p.link}" target="_blank">▶ Watch</a></span>
-        <span class="done-check" title="Mark as watched" onclick="toggleDone('${key}', this)">${isDone ? '✅' : '⭕'}</span>
+        <span class="p-link"><a href="${p.link}" target="_blank">${watchLabel}</a></span>
+        <span class="done-check" title="Mark as done" onclick="toggleDone('${key}', this)">${isDone ? '✅' : '⭕'}</span>
       `;
       body.appendChild(row);
     });
@@ -366,7 +607,7 @@ function toggleDone(key, el) {
   if (doneSet.has(key)) { doneSet.delete(key); el.textContent = '⭕'; }
   else { doneSet.add(key); el.textContent = '✅'; }
   const title = el.closest('.playlist-row').querySelector('.p-title');
-  if (doneSet.has(key)) { title.style.textDecoration='line-through'; title.style.opacity='0.5'; }
+  if (doneSet.has(key)) { title.style.textDecoration='line-through'; title.style.opacity='0.4'; }
   else { title.style.textDecoration=''; title.style.opacity=''; }
   saveDone();
   updateProgress();
